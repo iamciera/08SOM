@@ -1,0 +1,21 @@
+#Analysis 2
+#Getting full list of between tissue
+
+The purpose of this is to use all genes in creating the SOM, using only leaf development genes.  These come from Yasu's curated Gene list. 
+
+
+##Required Libraries
+
+```{r}
+library(ggplot2)
+library(reshape)
+library(kohonen)
+library(plyr)
+```
+
+Upload Yasu's curated gene list
+
+```{r}
+geneList1 <- read.csv("../../pnas.1402835111.sd06.csv")
+geneList2 <- read.csv("pnas.1402835111.sd07.csv")
+```

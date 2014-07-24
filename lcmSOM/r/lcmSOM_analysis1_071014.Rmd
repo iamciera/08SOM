@@ -1,0 +1,191 @@
+#Getting the most sig. differentiated genes between tissue
+
+The way I am approaching this is to get each list of sig DE genes between all DE anaylsis between tissue in WT and *tf2*, keep only the unique and see how many genes there are.
+
+##Required Libraries
+
+```{r}
+library(ggplot2)
+library(reshape)
+library(kohonen)
+```
+
+##Read in files
+
+Create a list of all DE analysis:
+
+```{r}
+#DE_analysis <- c("wtaother_wtcother",
+#                  "wtambr_wtaother",
+#                "wtambr_wtbmbr",
+#                "wtambr_wtcmbr",
+#                 "wtaother_wtbother",
+#                 "wtbmbr_wtbother",
+#                 "wtbmbr_wtcmbr",
+#                 "wtbother_wtcother",
+#                 "wtcmbr_wtcother")
+```
+###Count Data
+```{r}
+#Read in count data
+countData <- read.csv("../data/normalized_read_count.csv")
+#Melt count data
+countData <- melt(countData)
+colnames(countData) <- c("gene", "sample", "count")
+
+#set genotype
+
+countData$genotype <- ifelse(grepl("wt", countData$sample, ignore.case = T), "wt", 
+         ifelse(grepl("tf2", countData$sample, ignore.case = T), "tf2", "unknown"))
+
+#set tissue
+
+countData$tissue <- ifelse(grepl("other", countData$sample, ignore.case = T), "other", 
+         ifelse(grepl("mbr", countData$sample, ignore.case = T), "mbr", "unknown"))
+
+#Set Region
+countData$region <- ifelse(grepl("a", countData$sample, ignore.case = T), "A", 
+         ifelse(grepl("c", countData$sample, ignore.case = T), "C", "B"))
+
+#Set type
+
+countData$type <- paste(countData$region, countData$tissue,  sep = "")
+head(countData)
+
+#Subset by Genotype, since we will not be looking at tf2 at this stage
+countData <- subset(countData, genotype == "wt")
+```
+
+###Most Significantly DE genes
+```{r}
+#Read in each list of DE expressed genes
+wtaother_wtcother  <- read.table("../data/allSigGenes/wtaother_wtcother_DE_sig.txt", header = TRUE, fill = TRUE)
+wtambr_wtaother <- read.table("../data/allSigGenes/wtambr_wtaother_DE_sig.txt", header = TRUE, fill = TRUE)
+wtambr_wtbmbr <- read.table("../data/allSigGenes/wtambr_wtbmbr_DE_sig.txt", header = TRUE, fill = TRUE)
+wtambr_wtcmbr <- read.table("../data/allSigGenes/wtambr_wtcmbr_DE_sig.txt", header = TRUE, fill = TRUE)
+wtaother_wtbother <- read.table("../data/allSigGenes/wtaother_wtbother_DE_sig.txt", header = TRUE, fill = TRUE)
+wtbmbr_wtbother <- read.table("../data/allSigGenes/wtbmbr_wtbother_DE_sig.txt", header = TRUE, fill = TRUE)
+wtbmbr_wtcmbr <- read.table("../data/allSigGenes/wtbmbr_wtcmbr_DE_sig.txt", header = TRUE, fill = TRUE)
+wtbother_wtcother <- read.table("../data/allSigGenes/wtbother_wtcother_DE_sig.txt", header = TRUE, fill = TRUE)
+wtcmbr_wtcother <- read.table("../data/allSigGenes/wtcmbr_wtcother_DE_sig.txt", header = TRUE, fill = TRUE)
+
+#merge them together
+allGenes <- rbind(wtaother_wtcother, wtambr_wtaother, wtambr_wtbmbr, wtambr_wtcmbr, wtaother_wtbother,wtbmbr_wtcmbr,wtbother_wtcother,wtcmbr_wtcother)
+
+
+dim(allGenes)
+head(allGenes)
+
+#recieve just the list
+allGenesITAG <- allGenes[,1]
+length(allGenesITAG)
+#Remove duplicates
+allGenesITAG <- unique(allGenesITAG)
+
+#make an empty table to hold all the genes
+allGeneList <- data.frame(t(rep(NA,7)))
+colnames(allGeneList) <- c("type", "genotype", "N", "mean", "sd", "se", "gene")
+allGeneList <- allGeneList[-1,] #remove first row
+head(allGeneList)
+```
+
+#Loop together all relevent gene information.
+
+```{r, tidy = FALSE}
+for(GENE in allGenesITAG) {
+ 
+  if(length(grep(GENE, countData$gene)) < 1){ #this is just making sure that the curated
+    next; 
+    }
+      
+  geneData <- subset(countData, grepl(GENE, countData$gene))
+   
+  sumGraph <- ddply(geneData, c("type", "genotype"), summarise,
+               N    = length(count),
+               mean = mean(count),
+               sd   = sd(count),
+               se   = sd / sqrt(N))
+  
+  sumGraph$gene <- GENE
+  
+allGeneList  <- rbind(allGeneList, sumGraph) #bind together all the new rows per loop. 
+}
+dim(allGeneList)
+head(allGeneList)
+write.table(allGeneList, file = "../data/allGeneList.csv", sep = ",")
+```
+
+Self Organizing Maps: Ciera LCM 
+========================================================
+
+The goal of this analysis is to find genes that have co-expression patterns of 
+
+1. curated leaf gene list. Mean, Rep,
+2. most differentiated genes between tissue. 
+
+##1.pca.R
+
+First read in file that came from mostSigDEgenes.Rmd.  This is a list of genes from all DE analysis in WT. They were all cancatenated, then duplicate genes were removed.  In addition the mean was calculated from the replicates of each type. 
+
+The first step is to get it into the right format. First column being the genes, while the subsequent columns are the different libraries (type).
+
+```{r}
+mostDEgenes <- read.csv("../data/allGeneList.csv")
+mostDEgenes <- mostDEgenes[c(7, 1, 4)] #keep only needed columns (gene, type, mean)
+summary(mostDEgenes)
+head(mostDEgenes)
+
+
+#Change from long to wide data format
+mostDEgene.long <- cast(mostDEgenes, gene ~ type, value.var = mean, fun.aggregate = "mean")  #why did I have to specify "mean" here? Are there duplicates of types? Double check later. 
+
+mostDEgene.long <- as.data.frame(mostDEgene.long) #or does not keep column names during transformation. 
+names(mostDEgene.long)
+
+scale_data <- as.matrix(t(scale(t(mostDEgene.long[c(2:6)])))) 
+
+head(scale_data)
+
+#Principle Component Analysis
+pca <- prcomp(scale_data, scale=TRUE) 
+
+summary(pca) 
+pca.scores <- data.frame(pca$x)
+
+data.val <- cbind(mostDEgene.long, scale_data, pca.scores) 
+head(data.val)
+```
+
+
+##Visualizing the PCA
+
+Looks to be 2 maybe three major clusters. 
+
+```{r}
+p <- ggplot(data.val, aes(PC1, PC2))
+p + geom_point()
+```
+
+##1. Self Organizing Map
+
+This was the first attempt.  It appears as thought there is not enough information for the clustering 
+```{r}
+names(data.val)
+
+som.data <- as.matrix(data.val[,c(7:11)]) 
+
+set.seed(2)
+
+som <- som(data=som.data, somgrid(3,3,"hexagonal"))
+summary(som)
+
+plot(som, type ="changes")
+plot(som, type = "codes")
+plot(som, type = "counts")
+plot(som, type = "quality")
+
+data.val <- cbind(sig.tissue,sc.m82,sc.penn,ssom$unit.classif, ssom$distances)
+head(data.val)
+
+
+

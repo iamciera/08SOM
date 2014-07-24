@@ -1,0 +1,219 @@
+#Analysis 2
+#Getting full list of between tissue
+
+The purpose of this is to use all genes in creating the SOM, regardless of significance.  Using all genes from normalized read count. 
+
+##Required Libraries
+
+```{r}
+library(ggplot2)
+library(reshape)
+library(kohonen)
+library(plyr)
+```
+
+##Read in files
+
+Create a list of all DE analysis:
+
+```{r}
+#Read in count data
+countDataFull <- read.csv("../data/normalized_read_count.csv")
+
+#Melt count data
+countData <- melt(countDataFull)
+colnames(countData) <- c("gene", "sample", "count")
+
+#set genotype
+
+countData$genotype <- ifelse(grepl("wt", countData$sample, ignore.case = T), "wt", 
+         ifelse(grepl("tf2", countData$sample, ignore.case = T), "tf2", "unknown"))
+
+#set tissue
+
+countData$tissue <- ifelse(grepl("other", countData$sample, ignore.case = T), "other", 
+         ifelse(grepl("mbr", countData$sample, ignore.case = T), "mbr", "unknown"))
+
+#Set Region
+countData$region <- ifelse(grepl("a", countData$sample, ignore.case = T), "A", 
+         ifelse(grepl("c", countData$sample, ignore.case = T), "C", "B"))
+
+#Set type
+
+countData$type <- paste(countData$region, countData$tissue,  sep = "")
+head(countData)
+
+#Subset by Genotype, since we will not be looking at tf2 at this stage
+countData <- subset(countData, genotype == "wt")
+
+#All get a list of all ITAG genes.
+
+
+#make an empty table to hold all the genes
+allGeneList <- data.frame(t(rep(NA,7)))
+colnames(allGeneList) <- c("type", "genotype", "N", "mean", "sd", "se", "gene")
+allGeneList <- allGeneList[-1,] #remove first row
+head(allGeneList)
+
+#Get list of all ITAG gene names 
+
+allGenesITAG <- countDataFull[,1]
+length(allGenesITAG)
+```
+
+#Loop together all relevent gene information.
+
+```{r, tidy = FALSE}
+
+for(GENE in allGenesITAG) {
+ 
+  Sys.sleep(0.001)
+  setTxtProgressBar(pb, GENE)
+  
+  geneData <- subset(countData, grepl(GENE, countData$gene))
+   
+  sumGraph <- ddply(geneData, c("type", "genotype"), summarise,
+               N    = length(count),
+               mean = mean(count),
+               sd   = sd(count),
+               se   = sd / sqrt(N))
+  
+  sumGraph$gene <- GENE
+  
+allGeneList  <- rbind(allGeneList, sumGraph) #bind together all the new rows per loop. 
+}
+
+
+dim(allGeneList)
+head(allGeneList)
+write.table(allGeneList, file = "../data/allGeneList.analysis2.csv", sep = ",")
+```
+
+Self Organizing Maps: Ciera LCM 
+========================================================
+
+The goal of this analysis is to find genes that have co-expression patterns of 
+
+1. curated leaf gene list. Mean, Rep,
+2. most differentiated genes between tissue. 
+
+##Required Libraries
+
+```{r}
+library(ggplot2)
+library(reshape)
+library(kohonen)
+```
+
+##1.pca.R
+
+First read in file that came from mostSigDEgenes.Rmd.  This is a list of genes from all DE analysis in WT. They were all cancatenated, then duplicate genes were removed.  In addition the mean was calculated from the replicates of each type. 
+
+The first step is to get it into the right format. First column being the genes, while the subsequent columns are the different libraries (type).
+
+```{r}
+mostDEgenes <- read.csv("../data/allGeneList.analysis2.csv")
+head(mostDEgenes)
+mostDEgenes <- mostDEgenes[c(7, 1, 4)] #keep only needed columns (gene, type, mean)
+summary(mostDEgenes)
+head(mostDEgenes)
+
+
+#Change from long to wide data format
+mostDEgene.long <- cast(mostDEgenes, gene ~ type, value.var = mean, fun.aggregate = "mean")  #why did I have to specify "mean" here? Are there duplicates of types? Double check later. 
+
+mostDEgene.long <- as.data.frame(mostDEgene.long) #or does not keep column names during transformation. 
+names(mostDEgene.long)
+
+scale_data <- as.matrix(t(scale(t(mostDEgene.long[c(2:7)])))) 
+
+head(scale_data)
+
+#Principle Component Analysis
+pca <- prcomp(scale_data, scale=TRUE) 
+
+summary(pca) 
+pca.scores <- data.frame(pca$x)
+
+data.val <- cbind(mostDEgene.long, scale_data, pca.scores) 
+head(data.val)
+```
+
+
+##Visualizing the PCA
+
+There is not clear clustering in these genes. I don't think using all the genes is an appropriate way to find clear patterns in this data.  There is too much noise. I will proceed anyway, to explore how this effects SOM results.  
+
+```{r}
+p <- ggplot(data.val, aes(PC1, PC2))
+p + geom_point(alpha = 0.3)
+```
+
+##1. Self Organizing Map
+
+First I am going to include all the different tissue regions. I have set the somgrid to 3,3, which shows seperation. 
+
+```{r}
+names(data.val)
+
+som.data <- as.matrix(data.val[,c(6:11)]) #This is where you set how many libraries are involved. 
+head(som.data)
+set.seed(2) # This does not appear to influence the outcome very much 
+
+som <- som(data=som.data, somgrid(3,3,"hexagonal"))
+summary(som)
+```
+
+The training progress is something I need to look into.  One thing I know is occuring is that in some cases, the training does not level out in certain circumstances, which is bad.  Other than that understanding how well the training progress proceeded is unclear to me. 
+
+```{r}
+plot(som, type ="changes")
+```
+
+The codes plot is showing some groups of genes are similarly expressed in certain tissues. I will have to look into GO expression to understand what these genes are exactly. There are definitly some interesting clusters, especially middle left cluster.  I will be interesting the exact pattern of these genes, so visualizing across all tissues and preferentially coloring based on cluster is something I need to implement later. 
+
+```{r}
+plot(som, type = "codes")
+```
+
+The counts plot is worrisome to me. This is showing how many genes are clustered in each category.  It shows that most are evenly distibuted, which, to me, shows that the seperation could be random, there is not clear delimiting factors involved in seperating these clusters. 
+
+```{r}
+plot(som, type = "counts")
+```
+
+As with counts, the "quality" is showing how much these clusters seperate, which in this case shows even seperation.  I would feel more comfortable with the results if they showed a variation in seperation because that would suggest gene expresssion values showed enough variation in pattern to influence variation in cluster seperation. 
+```{r}
+plot(som, type = "quality")
+```
+
+##2
+Although I do not understand why at this point, when you limit the number of libraries you get better seperation.  For instance below is when I only use Aother, Bmbr, Bother tissue types. 
+
+```{r}
+names(data.val)
+
+som.data <- as.matrix(data.val[,c(9:11)]) 
+head(som.data)
+set.seed(2) # This does not appear to influence the outcome very much 
+
+som <- som(data=som.data, somgrid(3,3,"hexagonal"))
+summary(som)
+```
+
+```{r}
+plot(som, type ="changes")
+plot(som, type = "codes")
+plot(som, type = "counts")
+plot(som, type = "quality")
+```
+
+Conclusions:
+
+Using the entire normalized gene count data does not yield proper vector seperation. You can guess that is the case when looking at the PC1 vs PC2, as there are not any clear sepearation of clusters.  Try on a smaller subset.  Like Yasu's leaf curated genes. 
+
+Things to look into:
+1. Training.  
+2. Quality. 
+
+Another question worth looking into is if these results are occuring even in the *tf2*.

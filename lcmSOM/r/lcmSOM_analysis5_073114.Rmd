@@ -1,0 +1,223 @@
+#Super SOM
+
+##Purpose
+
+The purpose of this analysis is to make a superSOM.  
+
+```{r}
+library(ggplot2)
+library(reshape)
+library(plyr)
+library(kohonen)
+```
+
+Read in files and format data from raw files
+=============================================
+
+Create a list of all DE analysis:
+
+###Count Data
+```{r, eval=FALSE}
+#Read in count data
+countData <- read.csv("../data/normalized_read_count.csv")
+#Melt count data
+countData <- melt(countData)
+colnames(countData) <- c("gene", "sample", "count")
+
+#set genotype
+
+countData$genotype <- ifelse(grepl("wt", countData$sample, ignore.case = T), "wt", 
+         ifelse(grepl("tf2", countData$sample, ignore.case = T), "tf2", "unknown"))
+
+#set tissue
+
+countData$tissue <- ifelse(grepl("other", countData$sample, ignore.case = T), "other", 
+         ifelse(grepl("mbr", countData$sample, ignore.case = T), "mbr", "unknown"))
+
+#Set Region
+countData$region <- ifelse(grepl("a", countData$sample, ignore.case = T), "A", 
+         ifelse(grepl("c", countData$sample, ignore.case = T), "C", "B"))
+
+#Set type
+
+countData$type <- paste(countData$region, countData$tissue,  sep = "")
+head(countData)
+```
+
+###Most Significantly DE genes
+```{r, eval = FALSE}
+
+#you need to reset working directory to allSigGenes for easier import of list of significant genes
+setwd("~/Dropbox/Research/LCMProject/08SOM/lcmSOM/data/allSigGenes/")
+
+#makes a list of all files in directory
+file_list <- list.files()
+
+#Creates one list from all the files in directory
+for (file in file_list){
+       
+  # if the merged dataset doesn't exist, create it
+  if (!exists("dataset")){
+    dataset <- read.table(file, header=TRUE, sep="\t")
+  }
+   
+  # if the merged dataset does exist, append to it
+  if (exists("dataset")){
+    temp_dataset <-read.table(file, header=TRUE, sep="\t")
+    dataset<-rbind(dataset, temp_dataset)
+    rm(temp_dataset)
+  }
+ 
+}
+
+
+#recieve just the list
+allGenesITAG <- allGenes[,1]
+length(allGenesITAG)
+#Remove duplicates
+allGenesITAG <- unique(allGenesITAG)
+
+length(allGenesITAG)
+
+#make an empty table to hold all the genes
+allGeneList <- data.frame(t(rep(NA,7)))
+colnames(allGeneList) <- c("type", "genotype", "N", "mean", "sd", "se", "gene")
+allGeneList <- allGeneList[-1,] #remove first row
+head(allGeneList)
+```
+
+#Loop together all relevent gene information.
+
+```{r, eval = FALSE}
+for(GENE in allGenesITAG) {
+ 
+  if(length(grep(GENE, countData$gene)) < 1){ #this is just making sure that the list of sig genes
+    next; 
+    }
+      
+  geneData <- subset(countData, grepl(GENE, countData$gene))
+   
+  sumGraph <- ddply(geneData, c("type", "genotype"), summarise,
+               N    = length(count),
+               mean = mean(count),
+               sd   = sd(count),
+               se   = sd / sqrt(N))
+  
+  sumGraph$gene <- GENE
+  
+allGeneList  <- rbind(allGeneList, sumGraph) #bind together all the new rows per loop. 
+}
+dim(allGeneList)
+head(allGeneList)
+
+#There is only wt here!
+allGeneList$genotype <- as.factor(allGeneList$genotype)
+levels(allGeneList$genotype)
+
+#at this point set working directory back to source
+
+write.table(allGeneList, file = "../data/allGeneListBothGenotypes_analysis5.csv", sep = ",")
+```
+
+##1.pca.R
+
+
+```{r}
+mostDEgenes <- read.csv("../data/allGeneListBothGenotypes_analysis5.csv")
+head(mostDEgenes)
+
+mostDEgenes <- mostDEgenes[c(7, 2, 1, 4)] #keep only needed columns (gene, genotype, type, mean)
+
+head(mostDEgenes)
+
+#Change from long to wide data format
+mostDEgene.long <- cast(mostDEgenes, genotype + gene ~ type, value.var = mean, fun.aggregate = "mean")  #why did I have to specify "mean" here? Are there duplicates of types? Double check later. 
+
+head(mostDEgene.long)
+
+mostDEgene.long <- as.data.frame(mostDEgene.long) #transformation. 
+names(mostDEgene.long)
+
+
+scale_data <- as.matrix(t(scale(t(mostDEgene.long[c(3:8)]))))
+head(scale_data) 
+#Principle Component Analysis
+pca <- prcomp(scale_data, scale=TRUE) 
+
+summary(pca) 
+
+pca.scores <- data.frame(pca$x)
+
+data.val <- cbind(mostDEgene.long, scale_data, pca.scores) 
+
+head(data.val)
+```
+
+
+##Visualizing the PCA
+
+Looks to be three major clusters. 
+
+```{r}
+p <- ggplot(data.val, aes(PC1, PC2)) 
+p + geom_point()
+```
+
+
+##SuperSOM
+
+```{r}
+set.seed(6)
+names(data.val)
+
+superSomData <- data.val[,c(1:2,9:14)]
+
+#it seems like I should have had the genotype information in the header in the first place so now I am going to take the long way around to fix that.  The better idea would have to have done this *before* the seprating them.  Do this later. 
+
+tf2 <- subset(superSomData, genotype == "tf2", select = 3:8)
+wt <- subset(superSomData, genotype == "wt", select = 3:8)
+
+colnames(tf2) <- c("tf2Ambr", "tf2Aother", "tf2Bmbr", "tf2Bother", "tf2Cmbr", "tf2Cother") 
+colnames(wt) <- c("wtAmbr", "wtAother", "wtBmbr", "wtBother", "wtCmbr", "wtCother")
+
+#paste in genotype data
+#genotype <- data.val$genotype
+#superSomData <- cbind(genotype, superSomData)
+#superSomData.long <- as.data.frame(superSomData) #transformation. 
+#scale_data <- as.matrix(t(scale(t(superSomData.long[c(1:6)]))))
+
+wt <- as.matrix(wt)
+tf2 <- as.matrix(tf2)
+
+#I may need to scale seperatly? Does it make a difference?
+#sc.m82 <- t(scale(t(m.m82)))
+#sc.penn <- t(scale(t(m.penn)))
+
+all.data <- list(wt,tf2)
+
+ssom <- supersom(all.data, somgrid(7, 7, "hexagonal"),weights=c(0.5,0.5)) 
+
+summary(ssom)
+par(mfrow = c(3, 2))
+plot(ssom, type ="changes")
+plot(ssom, type = "codes")
+plot(ssom, type = "counts")
+plot(ssom, type = "quality")
+
+data.val <- cbind(data.val,tf2,wt,ssom$unit.classif,ssom$distances)
+
+head(data.val)
+
+write.table(data.val, file="../data/ssom.data.analysis5.txt")
+```
+
+Visualization 
+
+```{r}
+plot.data <- read.table("../data/ssom.data.analysis5.txt",header=TRUE)
+names(plot.data)
+dim(plot.data)
+
+p <- ggplot(plot.data, aes(PC1, PC2, colour=factor(ssom.unit.classif))) #notice I am using som_cluster and not unit.classif, because this is the larger SOM
+p + geom_point() + theme_bw()
+```

@@ -1,0 +1,74 @@
+#Analysis 4 - Top 25% of coefficient of variation
+
+This was never completed I was Since there are multiple ways to subset the original data, in this analysis I am checking to see using the top 25% of genes based on co-efficient of variation will give me similar results as Analysis 1, which was based on DE of all genes. 
+
+##1. Get the co-efficient of variation. 
+
+```{r}
+allGenes <- read.csv("../data/analysis02_geneList.csv")
+head(allGenes)
+allGenes$cv <- allGenes$sd / allGenes$mean
+
+quantile(allGenes$cv)
+
+allGenes.sort <- allGenes[with(allGenes, order(-cv)),] #order by cv increasing first
+
+allGenes <- allGenes.sort[1:(.25 * nrow(allGenes)),] # gather top 25%
+```
+
+##2.pca
+
+```{r}
+head(allGenes)
+dim(allGenes)
+allGenes <- allGenes[c(7, 1, 4)] #keep only needed columns (gene, type, mean)
+
+#Change from long to wide data format
+allGene.long <- cast(allGenes, gene ~ type, value.var = mean, fun.aggregate = "mean")  #why did I have to specify "mean" here? Are there duplicates of types? Double check later. 
+
+#####There are a ton of NAs here. 
+
+allGene.long <- as.data.frame(allGene.long) #or does not keep column names during transformation. 
+names(allGene.long)
+
+scale_data <- as.matrix(t(scale(t(allGene.long[c(2:7)])))) 
+
+#Principle Component Analysis
+pca <- prcomp(scale_data, scale=TRUE) 
+
+summary(pca) 
+pca.scores <- data.frame(pca$x)
+
+data.val <- cbind(allGene.long, scale_data, pca.scores) 
+head(data.val)
+```
+
+##Visualizing the PCA
+The PCA looks very similar. 
+
+```{r}
+p <- ggplot(data.val, aes(PC1, PC2))
+p + geom_point()
+```
+
+##What are the differences in genes?
+
+```{r}
+mostDEgenes <- read.csv("../data/allGeneList.csv")
+dim(mostDEgenes)  #13524
+
+allGenes25 <- allGenes
+dim(allGenes25) #2733
+```
+
+There are more genes in the top 25%.
+
+unique<- unique(mostDEgenes$gene)
+unique<- unique(allGenes25$gene)
+length(unique)
+
+gene <- intersect(mostDEgenes$gene, allGenes25$gene)
+gene <- setdiff(mostDEgenes$gene, allGenes25$gene)
+gene
+
+

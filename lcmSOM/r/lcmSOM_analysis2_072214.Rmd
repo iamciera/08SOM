@@ -66,9 +66,6 @@ length(allGenesITAG)
 ```{r, tidy = FALSE}
 
 for(GENE in allGenesITAG) {
- 
-  Sys.sleep(0.001)
-  setTxtProgressBar(pb, GENE)
   
   geneData <- subset(countData, grepl(GENE, countData$gene))
    
@@ -86,7 +83,7 @@ allGeneList  <- rbind(allGeneList, sumGraph) #bind together all the new rows per
 
 dim(allGeneList)
 head(allGeneList)
-write.table(allGeneList, file = "../data/allGeneList.analysis2.csv", sep = ",")
+write.table(allGeneList, file = "../data/analysis02_geneList.csv", sep = ",")
 ```
 
 Self Organizing Maps: Ciera LCM 
@@ -112,22 +109,23 @@ First read in file that came from mostSigDEgenes.Rmd.  This is a list of genes f
 The first step is to get it into the right format. First column being the genes, while the subsequent columns are the different libraries (type).
 
 ```{r}
-mostDEgenes <- read.csv("../data/allGeneList.analysis2.csv")
-head(mostDEgenes)
-mostDEgenes <- mostDEgenes[c(7, 1, 4)] #keep only needed columns (gene, type, mean)
-summary(mostDEgenes)
-head(mostDEgenes)
+allGenes <- read.csv("../data/analysis02_geneList.csv")
+
+head(allGenes)
+dim(allGenes)
+allGenes <- allGenes[c(7, 1, 4)] #keep only needed columns (gene, type, mean)
+summary(allGenes)
+head(allGenes)
 
 
 #Change from long to wide data format
-mostDEgene.long <- cast(mostDEgenes, gene ~ type, value.var = mean, fun.aggregate = "mean")  #why did I have to specify "mean" here? Are there duplicates of types? Double check later. 
+allGene.long <- cast(mostDEgenes, gene ~ type, value.var = mean, fun.aggregate = "mean")  #why did I have to specify "mean" here? Are there duplicates of types? Double check later. 
 
 mostDEgene.long <- as.data.frame(mostDEgene.long) #or does not keep column names during transformation. 
 names(mostDEgene.long)
 
 scale_data <- as.matrix(t(scale(t(mostDEgene.long[c(2:7)])))) 
 
-head(scale_data)
 
 #Principle Component Analysis
 pca <- prcomp(scale_data, scale=TRUE) 
@@ -135,7 +133,7 @@ pca <- prcomp(scale_data, scale=TRUE)
 summary(pca) 
 pca.scores <- data.frame(pca$x)
 
-data.val <- cbind(mostDEgene.long, scale_data, pca.scores) 
+data.val <- cbind(allGenes.long, scale_data, pca.scores) 
 head(data.val)
 ```
 
@@ -156,7 +154,7 @@ First I am going to include all the different tissue regions. I have set the som
 ```{r}
 names(data.val)
 
-som.data <- as.matrix(data.val[,c(6:11)]) #This is where you set how many libraries are involved. 
+som.data <- as.matrix(data.val[,c(2:7)]) #This is where you set how many libraries are involved. 
 head(som.data)
 set.seed(2) # This does not appear to influence the outcome very much 
 
@@ -182,7 +180,7 @@ The counts plot is worrisome to me. This is showing how many genes are clustered
 plot(som, type = "counts")
 ```
 
-As with counts, the "quality" is showing how much these clusters seperate, which in this case shows even seperation.  I would feel more comfortable with the results if they showed a variation in seperation because that would suggest gene expresssion values showed enough variation in pattern to influence variation in cluster seperation. 
+As with counts, the "quality" is showing how much these clusters seperate, which in this case shows even seperation.  I would feel more comfortable with the results if they showed a variation in seperation because that would suggest gene expresssion values showed enough variation in pattern to influence variation in cluster seperation. Although in the Kohonen_vignette.pdf, they explain "The right plot (quality) shows the mean distance of objects, mapped to a particular unit, to the codebook vector of that unit. **A good mapping should show small distances everywhere in the map**." All of the distances are small so maybe it is good?  Need to look into more. 
 ```{r}
 plot(som, type = "quality")
 ```

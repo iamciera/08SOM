@@ -1,0 +1,1 @@
+"unit.classif" "genotype" "gene" "Ambr" "Aother" "Bmbr" "Bother" "Cmbr" "Cother" "Ambr" "Aother" "Bmbr" "Bother" "Cmbr" "Cother" "PC1" "PC2" "PC3" "PC4" "PC5" "som$unit.classif" "som$distances" "som_cluster"

@@ -1,0 +1,118 @@
+#Analysis7_080414
+
+The purpose of this analysis is to look at the differences between wt and *tf2*, mainly from the `analysis1` and `analysis1.5`
+
+##Dependencies
+```{r}
+library(ggplot2)
+library(reshape)
+library(kohonen)
+```
+##PCA differences
+
+First read in PCA data. This wt.large data was created from `lcmSOM_analysis1_071014.Rmd` read out in line 273.  The tf2.large data was created from `lcmSOM_analysis1.5_080414.Rmd` line 281.
+
+```{r}
+##Read in Data
+#WT
+wt.small <- read.table("../data/analysis1.som.data.small.txt",header=TRUE)
+
+sc.wt.small <- as.matrix(wt.large[,c(9:14)])
+
+pca <- prcomp(sc.wt.small, scale=TRUE) 
+summary(pca) 
+
+pca.scores <- data.frame(pca$x)
+
+p <- ggplot(pca.scores, aes(PC1, PC2)) 
+p + geom_point()
+
+
+#tf2
+tf2.small <- read.table("../data/analysis1.5.som.data.small.txt",header=TRUE)
+head(tf2.small)
+sc.tf2.small <- as.matrix(tf2.large[,c(9:14)])
+
+pca <- prcomp(sc.tf2.small, scale=TRUE) 
+summary(pca) 
+
+pca.scores <- data.frame(pca$x)
+
+p <- ggplot(pca.scores, aes(PC1, PC2)) 
+p + geom_point()
+```
+
+First there is an obvious difference in the PCA clustering between the two lines. There are overall less DE genes in *tf2*, but what are the differences between the two lines of most DE.
+
+#Differences in DE genes between the two lines?
+
+```{r}
+length(intersect(tf2.small$gene, wt.small$gene)) #There are 457 genes that match between the two. 
+intercept <- intersect(tf2.small$gene, wt.small$gene) #keep for later evaluation on what these genes are. 
+```
+
+##How are the clusters different/same between the two genotypes? 
+
+Since the small and large SOMs are similar we are going to focus on the small SOMs at first
+
+```{r}
+#start with new dataset
+
+##WT
+names(wt.small)
+wt.som.data <- as.matrix(wt.small[,c(8:13)])
+set.seed(2)
+wt.som <- som(data=wt.som.data, somgrid(3,2,"hexagonal")) # This is where you change the size of the map
+summary(wt.som)
+plot(wt.som, type = "codes")
+
+#tf2
+
+names(tf2.small)
+tf2.som.data <- as.matrix(tf2.small[,c(8:13)])
+set.seed(2)
+tf2.som <- som(data=tf2.som.data, somgrid(3,2,"hexagonal")) # This is where you change the size of the map
+summary(tf2.som)
+plot(tf2.som, type = "codes")
+```
+
+There appear to be different types of clusters. There is less differentiation between tissue in *tf2*, for instance there is no Cother specific cluster in in *tf2*, instead the cluster which Cmbr defines is also equally influenced by Bother.  The question becomes what are the differences/ the same in genes between the clusters that define these clusters. 
+
+**It might be more appropriate in all these classes to use the top 25% of genes of co-efficeint of variation. So that we are comparing the exact same genes.**
+
+##Defining the clusters. 
+###Cmbr between the two
+
+The most interesting cluster to me to start is the difference in Cmbr clusters, which is cluster 1 in the *tf2* SOM, and cluster cluster 2 in WT.  Let's isolate what those clusters are. 
+
+####Cmbr difference
+```{r}
+tf2Cmbr <- subset(tf2.small, som.unit.classif == 1)
+dim(tf2Cmbr)
+
+wtCmbr <- subset(wt.small, som.unit.classif == 2)
+dim(wtCmbr)
+
+Cmbr <- as.data.frame(intersect(tf2Cmbr$gene, wtCmbr$gene))
+colnames(Cmbr)[1] <- "gene"
+````
+
+Anotate the results
+```{r}
+annotation1<- read.delim("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_ITAG_annotations.tsv", header=FALSE)  #Changed to the SGN human readable annotation
+colnames(annotation1) <- c("ITAG", "SGN_annotation")
+annotation2<- read.delim ("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_annotated.tsv")
+colnames(annotation2)
+annotation <- merge(annotation1,annotation2, by = "ITAG")
+colnames(annotation)
+
+colnames(annotation)[1] <- "gene"
+
+#Making the only significant gene table
+Cmbr <- merge(Cmbr,annotation,by = "gene", all.x=TRUE) #This is merging to get the annotation. #Nothing.
+```
+
+I am going to take a break and make sure I do 25% coefficient of variation. So we have the same genes throughout, so comparisons are better. 
+
+
+

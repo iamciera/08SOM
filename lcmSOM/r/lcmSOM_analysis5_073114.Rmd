@@ -70,10 +70,15 @@ for (file in file_list){
  
 }
 
+names(dataset)
+dim(dataset)
+
+allGenes<- dataset
 
 #recieve just the list
 allGenesITAG <- allGenes[,1]
 length(allGenesITAG)
+
 #Remove duplicates
 allGenesITAG <- unique(allGenesITAG)
 
@@ -116,15 +121,15 @@ levels(allGeneList$genotype)
 
 #at this point set working directory back to source
 
-write.table(allGeneList, file = "../data/allGeneListBothGenotypes_analysis5.csv", sep = ",")
+write.table(allGeneList, file = "../data/allGeneListBothGenotypes_analysis5b.csv", sep = ",")
 ```
 
 ##1.pca.R
 
 
 ```{r}
-mostDEgenes <- read.csv("../data/allGeneListBothGenotypes_analysis5.csv")
-head(mostDEgenes)
+
+mostDEgenes <- read.csv("../data/allGeneListBothGenotypes_analysis5b.csv")
 
 mostDEgenes <- mostDEgenes[c(7, 2, 1, 4)] #keep only needed columns (gene, genotype, type, mean)
 
@@ -180,12 +185,6 @@ wt <- subset(superSomData, genotype == "wt", select = 3:8)
 colnames(tf2) <- c("tf2Ambr", "tf2Aother", "tf2Bmbr", "tf2Bother", "tf2Cmbr", "tf2Cother") 
 colnames(wt) <- c("wtAmbr", "wtAother", "wtBmbr", "wtBother", "wtCmbr", "wtCother")
 
-#paste in genotype data
-#genotype <- data.val$genotype
-#superSomData <- cbind(genotype, superSomData)
-#superSomData.long <- as.data.frame(superSomData) #transformation. 
-#scale_data <- as.matrix(t(scale(t(superSomData.long[c(1:6)]))))
-
 wt <- as.matrix(wt)
 tf2 <- as.matrix(tf2)
 
@@ -195,7 +194,7 @@ tf2 <- as.matrix(tf2)
 
 all.data <- list(wt,tf2)
 
-ssom <- supersom(all.data, somgrid(7, 7, "hexagonal"),weights=c(0.5,0.5)) 
+ssom <- supersom(all.data, somgrid(3, 2, "hexagonal"),weights=c(0.5,0.5)) 
 
 summary(ssom)
 par(mfrow = c(3, 2))
@@ -211,7 +210,37 @@ head(data.val)
 write.table(data.val, file="../data/ssom.data.analysis5.txt")
 ```
 
-Visualization 
+This is setting the larger clusters that incorporate multiple clusters. 
+
+```{r}
+
+## use hierarchical clustering to cluster the codebook vectors
+som_cluster <- cutree(hclust(dist(ssom$codes)), 5)
+# plot these results:
+plot(som, type="mapping", bgcol = som_cluster, main = "Clusters") 
+add.cluster.boundaries(som, som_cluster) 
+
+# I want to attach the hierchal cluster to the larger dataset data.val.
+som_clusterKey <- data.frame(som_cluster)
+som_clusterKey$unit.classif <- c(1:36)
+
+data.val <- cbind(data.val,som$unit.classif,som$distances)
+
+#Merge data.val with som_clusterKey
+##change data.val to match som_cluster key 
+names(data.val)[20] <- "unit.classif"
+
+data.val <- merge(data.val, som_clusterKey, by.x = "unit.classif" ) #ignore warning, this is what you want.  You are essentially filling in the empties with the value from som_clusterKey
+
+write.table(data.val, file="../data/analysis1.som.data.txt")
+#Make sure that there is just one of each value som$unit.classif and distances column. 
+names(data.val)
+```
+
+
+
+
+###Visualization 
 
 ```{r}
 plot.data <- read.table("../data/ssom.data.analysis5.txt",header=TRUE)

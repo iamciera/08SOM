@@ -1,37 +1,57 @@
 #Analysis 4 - Top 25% of coefficient of variation
 
-This was never completed I was Since there are multiple ways to subset the original data, in this analysis I am checking to see using the top 25% of genes based on co-efficient of variation will give me similar results as Analysis 1, which was based on DE of all genes. 
+In this analysis I am checking to see using the top 25% of genes based on co-efficient of variation will give me similar results as Analysis 1, which was based on DE of all genes of WT. 
 
 ##1. Get the co-efficient of variation. 
+```{r}
+countData <- read.csv("../data/normalized_read_count.csv")
+head(countData)
+
+names(countData)
+
+countData$tf2ambr <- rowMeans(subset(countData[2:5]))
+countData$tf2aother <- rowMeans(subset(countData[6:9]))
+countData$tf2bmbr <- rowMeans(subset(countData[10:12]))
+countData$tf2bother <- rowMeans(subset(countData[13:16]))
+countData$tf2cmbr <- rowMeans(subset(countData[17:20]))
+countData$tf2cother <- rowMeans(subset(countData[21:24]))
+
+countData$wtambr <- rowMeans(subset(countData[25:27]))
+countData$wtaother <- rowMeans(subset(countData[28:32]))
+countData$wtbmbr <- rowMeans(subset(countData[33:36]))
+countData$wtbother <- rowMeans(subset(countData[37:40]))
+countData$wtcmbr <- rowMeans(subset(countData[41:46]))
+countData$wtcother <- rowMeans(subset(countData[47:50]))
+dim(countData)
+ave <- subset(countData[50:61])
+ave$sd <- apply(ave,1,function(d)sd(d))
+ave$average <- rowMeans(subset(ave[1:12]))
+ave$cv <- ave$sd / ave$average
+dim(ave)
+
+countData <- cbind(countData, ave[,13:15])
+names(countData)
+```
 
 ```{r}
-allGenes <- read.csv("../data/analysis02_geneList.csv")
-head(allGenes)
-allGenes$cv <- allGenes$sd / allGenes$mean
+quantile(countData$cv)
+countData[is.na(countData)] <- 0
+subCountData <- subset(countData, cv > 0.61357492)
+names(subCountData)
+head(subCountData)
+allGenes25 <- subCountData[,c(1,50:64)]
+dim(allGenes25)
+head(allGenes25)
 
-quantile(allGenes$cv)
-
-allGenes.sort <- allGenes[with(allGenes, order(-cv)),] #order by cv increasing first
-
-allGenes <- allGenes.sort[1:(.25 * nrow(allGenes)),] # gather top 25%
+colnames(allGenes25)[1]<-"gene"
 ```
 
 ##2.pca
 
 ```{r}
-head(allGenes)
-dim(allGenes)
-allGenes <- allGenes[c(7, 1, 4)] #keep only needed columns (gene, type, mean)
-
-#Change from long to wide data format
-allGene.long <- cast(allGenes, gene ~ type, value.var = mean, fun.aggregate = "mean")  #why did I have to specify "mean" here? Are there duplicates of types? Double check later. 
 
 #####There are a ton of NAs here. 
-
-allGene.long <- as.data.frame(allGene.long) #or does not keep column names during transformation. 
-names(allGene.long)
-
-scale_data <- as.matrix(t(scale(t(allGene.long[c(2:7)])))) 
+scale_data <- as.matrix(t(scale(t(allGenes25[c(8:13)])))) 
 
 #Principle Component Analysis
 pca <- prcomp(scale_data, scale=TRUE) 
@@ -39,7 +59,7 @@ pca <- prcomp(scale_data, scale=TRUE)
 summary(pca) 
 pca.scores <- data.frame(pca$x)
 
-data.val <- cbind(allGene.long, scale_data, pca.scores) 
+data.val <- cbind(allGenes25, scale_data, pca.scores) 
 head(data.val)
 ```
 
@@ -53,22 +73,62 @@ p + geom_point()
 
 ##What are the differences in genes?
 
-```{r}
-mostDEgenes <- read.csv("../data/allGeneList.csv")
-dim(mostDEgenes)  #13524
+What is the difference between genes between allGeneList, which is from analysis one and only includes genes from the list of wt. 
 
-allGenes25 <- allGenes
-dim(allGenes25) #2733
+```{r}
+mostDEgenesWT <- read.csv("../data/allGeneList.csv") #just WT
+head(mostDEgenesWT)
+
+mostDEgenesWT <- mostDEgenesWT[c(7, 1, 4)] #keep only needed columns (gene, type, mean)
+
+#Change from long to wide data format
+mostDEgenesWT.long <- cast(mostDEgenesWT, gene ~ type, value.var = mean, fun.aggregate = "mean") 
+
+
+#must cast from short to long version for comparisons. 
+head(mostDEgenesWT.long)
+head(allGenes)
+dim(mostDEgenesWT.long) #2249
+dim(allGenes25) #4618 #25% cv
+
 ```
 
 There are more genes in the top 25%.
+```{r}
+length(intersect(mostDEgenesWT.long$gene, allGenes25$gene)) #1500
+length(setdiff(mostDEgenesWT.long$gene, allGenes25$gene)) #749
+length(setdiff(allGenes25$gene,mostDEgenesWT.long$gene)) #3118
+```
 
-unique<- unique(mostDEgenes$gene)
-unique<- unique(allGenes25$gene)
-length(unique)
+There are 1500 genes that are the same between 25% co-efficient of variation and the top genes in DE expression. There are 749 unique genes in DE expression list and 3118 in the top 25% co-efficient of variation.  
 
-gene <- intersect(mostDEgenes$gene, allGenes25$gene)
-gene <- setdiff(mostDEgenes$gene, allGenes25$gene)
-gene
+How would this affect the SOMs?  It would cast a wider net when performing the SOMs.  But the difference between them is somewhat worrisome.  There should not be genes found in mostDEgenesWT that are not found in the top 25% from co-efficient of variation. 
 
+##Comparing list of all genes
+
+The best comparison would be all the genes in all list of DE, as I did in Analysis5, this list was found reading in all of the genes of all the 27 different DE expression analysis. 
+
+```{r}
+#Read in total list and make long
+mostDEgenesALL <- read.csv("../data/allGeneListBothGenotypes_analysis5.csv")
+
+mostDEgenesALL <- mostDEgenesALL[c(7, 1, 4)] #keep only needed columns (gene, type, mean)
+head(mostDEgenesALL)
+#Change from long to wide data format
+mostDEgenesALL.long <- cast(mostDEgenesALL, gene ~ type, value.var = mean, fun.aggregate = "mean") 
+head(mostDEgenesALL.long)
+dim(mostDEgenesALL.long) #3,574
+```
+
+```{r}
+length(intersect(allGenes25$gene, mostDEgenesALL.long$gene)) #2355
+length(setdiff(allGenes25$gene, mostDEgenesALL.long$gene)) #2263
+length(setdiff(mostDEgenesALL.long$gene, allGenes25$gene)) #1219
+```
+
+There are 2355 similar genes between all DE genes between all tissues and tissue types (mostDEgenesALL),  There are 2263 genes that are unique to top 25% of co-efficient of variatation, and 1219 unique to mostDEgenesALL.  Can I just use all?  Can I add the 2,263 genes found from top 25% of co-efficient of variation to my list? Ask this question in tomato group. 
+
+I think I am going to go ahead and start using the list of unique genesbetween all DE genes between all tissues and tissue types as found in analysis5. 
+
+ 
 

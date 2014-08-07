@@ -20,6 +20,8 @@ The goal of this is to provide a Self Organizing Map (SOM) of the LCM data to un
 
 `lcmSOM_analysis1d_080514.Rmd` - This should be the last analaysis of the original SOM.  This analysis is a follow-up to `lcmSOM_analysis1c_080514.Rmd`, where the original scaling will be done specific to genotype.  Scaling does make a difference. Not a huge difference, but this is the more appropriate way to do it, so I am going to do it this way from now on. 
 
+I continued by looking at the difference between all the clusters. Which showed that although the clusters are different, they are essentially the same. 
+
 **This is the analysis that makes the most sense in the SOM.**
 
 `lcmSOM_analysis1.5b_080514.Rmd` - This is a follow up. Now using the full list of DE genes instead of the WT specific list as was done in Analysis1.5b. 

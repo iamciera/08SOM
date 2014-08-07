@@ -1,6 +1,7 @@
 #Getting the most sig. differentiated genes between tissue
 
-This will be doing SOMs based on the full list of DE genes as generated from Analysis5. All
+##Purpose
+This should be the last analaysis of the original SOM.  This analysis is a follow-up to `lcmSOM_analysis1c_080514.Rmd`, where the original scaling will be done specific to genotype.  
 
 ##Required Libraries
 
@@ -12,10 +13,6 @@ library(kohonen)
 
 Self Organizing Maps 
 ========================================================
-  
-The goal of this analysis is to find genes that have co-expression patterns of 
-
-1. most differentiated genes between tissue. 
 
 ##1.pca.R
 
@@ -33,9 +30,21 @@ mostDEgenes <- mostDEgenes[c(7, 1, 2, 4)] #keep only needed columns (gene, type,
 mostDEgene.long <- cast(mostDEgenes, genotype + gene ~ type, value.var = mean, fun.aggregate = "mean")  #why did I have to specify "mean" here? Are there duplicates of types? Double check later. 
 mostDEgene.long <- as.data.frame(mostDEgene.long)  
 head(mostDEgene.long)
+```
 
-scale_data <- as.matrix(t(scale(t(mostDEgene.long[c(3:8)]))))#transformation.
+At this point I am going to subset on genotype and scale seperatley before adding them back together. **THIS  IS THE ONLY PART DIFFERENT FROM analysis`lcmSOM_analysis1c_080514.Rmd`**
 
+```{r}
+wt <- subset(mostDEgene.long, genotype == "wt")
+tf2 <- subset(mostDEgene.long, genotype == "tf2")
+
+scale_data.wt <- as.matrix(t(scale(t(wt[c(3:8)]))))#transformation.
+scale_data.tf2 <- as.matrix(t(scale(t(tf2[c(3:8)]))))#transformation.
+
+scale_data <- rbind(scale_data.wt, scale_data.tf2)
+```
+
+```{r}
 #Principle Component Analysis
 pca <- prcomp(scale_data, scale=TRUE) 
 
@@ -47,7 +56,6 @@ data.val <- cbind(mostDEgene.long, scale_data, pca.scores)
 head(data.val)
 ```
 
-
 ##Visualizing the PCA
 
 Looks to be three major clusters. 
@@ -57,133 +65,9 @@ p <- ggplot(data.val, aes(PC1, PC2))
 p + geom_point(alpha = .6)
 ```
 
-#1. Self Organizing Map - (6,6) Large
+------------
 
-The size of the map is something that may cause differences in the genes that are clustered.  Using a small map size (3,2), I found they cluster in according to tissue type. This makes the interpretation of the results pretty straight forward. My only worry is that the map might not be large enough, considering [1], suggests that you size of the map based on count distribution, the goal being an even distribution, with no "peak" counts in any one cluster while also having no empty clusters.  
-
-The only way to see how this is affects what we see is to compare the clusters of the small (3,2) and large map (6,6).  
-
-```{r}
-names(data.val)
-
-som.data <- as.matrix(data.val[,c(9:14)])  #subset only the scaled gene expression values
-names(som.data)
-set.seed(5)
-
-som <- som(data=som.data, somgrid(6,6,"hexagonal")) # This is where you change the size of the map
-summary(som)
-```
-
-###Training Plot ("changes") - Large
-
-This shows a hundred iterations. Training decreases with iterations and plateaus at around 40 iterations.  Ideally you want the the training to reach a minimum plateau.  In the example online, the decrease to this plateau happens slowly with a slow decline to the minimum plateau.  I should look into what this sudden drop means. 
-
-```{r}
-plot(som, type ="changes")
-```
-
-###Code Plot - Large
-
-The the code plot shows each cluster and the node wieght vectors or "codes" associated with each node. These are made up of the original normalized values of the original values used to generate the map.  You should see patterns of clustering.
-
-The fan chart in the center of the clusters reveals the characteristics that define how the genes were clustered into each particular cluster.  For instance if one cluster has only one large fan piece, say for Bother, this is telling us that most of the genes in this cluster were grouped because of similar normalized gene count value of the Bother region. We do not know the degree, it could mean all these genes are up-regulated or down-regulated in the Bother region, but we do not know which at this point. 
-
-```{r}
-plot(som, type = "codes")
-```
-
-###Count Plot - Large
-
-This tells you how many genes are in each of the clusters. The count plot can be used as a quality check.  Ideally you want a uniform distribution.  If there are some peaks in certain areas, this means you should likely increase the map size.  If you have empty nodes you should decrease the map size [1]. 
-
-```{r}
-plot(som, type = "counts")
-```
-
-###Distance Neighbour Plot - Large
-
-This is sometimes called the "U-Matrix", it can help identify further clustering. Areas of low neighbour distance indicate groups of nodes that are similar and the further apart nodes indicate natural "borders" in the map. 
-
-```{r}
-plot(som, type="dist.neighbours")
-```
-
-###Heatmaps - large
-
-This shows the distribution of each type 
-
-```{r}
-head(som$codes)
-som$data <- data.frame(som$data) #changed to dataframe to extract column names easier. 
-
-#This is just a loop that plots the distribution of each tissue type across the map. 
-for (i in 1:6){
-  plot(som, type = "property", property = som$codes[,i], main=names(som$data)[i])
-  print(plot)
-  }
-```
-
-###Clustering Plot - Large
-
-This groups clusters based on similar "metrics".  The advice given from [1], suggests that the heatmap should be used to view the overall "story" of the map. Essentiatlly you are taking all the tissue types into account and viewing it all on one heat map. 
-
-```{r}
-#"estimate of the number of clusters that would be suitable can be ascertained using a kmeans algorithm and examing for an “elbow-point” in the plot of “within cluster sum of squares[1]”
-
-#What the hell is going on here?
-
-mydata <- som$codes
-head(mydata)
-
-wss <- (nrow(mydata)-1)*sum(apply(mydata,2,var)) 
-
-for (i in 1:8) {
-  wss[i] <- sum(kmeans(mydata, centers=i)$withinss)
-}
-
-plot(wss)
-```
-
-This is setting the larger clusters that incorporate multiple clusters. 
-
-```{r}
-## use hierarchical clustering to cluster the codebook vectors
-som_cluster <- cutree(hclust(dist(som$codes)), 6)
-# plot these results:
-plot(som, type="mapping", bgcol = som_cluster, main = "Clusters") 
-add.cluster.boundaries(som, som_cluster) 
-
-# I want to attach the hierchal cluster to the larger dataset data.val.
-som_clusterKey <- data.frame(som_cluster)
-som_clusterKey$unit.classif <- c(1:36)
-
-data.val <- cbind(data.val,som$unit.classif,som$distances)
-head(data.val)
-#Merge data.val with som_clusterKey
-##change data.val to match som_cluster key 
-names(data.val)[21] <- "unit.classif"
-
-data.val <- merge(data.val, som_clusterKey, by.x = "unit.classif" ) #ignore warning, this is what you want.  You are essentially filling in the empties with the value from som_clusterKey
-
-write.table(data.val, file="../data/analysis1.som.data.ALLC.txt")
-#Make sure that there is just one of each value som$unit.classif and distances column. 
-names(data.val)
-```
-
-#Other Visualization - Large
-
-###Visualize by Cluster
-
-```{r}
-plot.data <- read.table("../data/analysis1.som.data.ALLC.txt",header=TRUE)
-
-p <- ggplot(plot.data, aes(PC1, PC2, colour=factor(som_cluster))) #notice I am using som_cluster and not unit.classif, because this is the larger SOM
-p + geom_point(alpha = .6) + theme_bw()
-```
-
-
-Conclusion:
-
+*I am skipping the large Map and going straight to the small*
 
 2. Self Organizing Map- Small (3,2)
 -----------------------------
@@ -251,7 +135,8 @@ for (i in 1:6){
 Output
 ```{r}
 data.val.small <- cbind(data.val,som$unit.classif,som$distances)
-write.table(data.val.small, file="../data/analysis1.som.data.small.ALLC.txt")
+head(data.val.small)
+write.table(data.val.small, file="../data/analysis1.som.data.small.ALLD.txt")
 #Make sure that there is just one of each value som$unit.classif and distances column. 
 names(data.val.small)
 ```
@@ -261,27 +146,125 @@ names(data.val.small)
 ###Visualize by Cluster
 
 ```{r}
-plot.data <- read.table("../data/analysis1.som.data.small.ALLC.txt",header=TRUE)
+plot.data <- read.table("../data/analysis1.som.data.small.ALLD.txt",header=TRUE)
 names(plot.data)
 
 p <- ggplot(plot.data, aes(PC1, PC2, colour=factor(som.unit.classif))) #use unit.classif for smaller dataset
 p + geom_point(alpha = .6) + facet_grid(.~genotype) + theme_bw()
 ```
 
-###Visualize by individual clusters
+
+##Cluster Specific analysis
+Now I want to take a look at what are is going on exactly in these clusters. The clusters start with the bottom left, which is cluster one and is 
 
 ```{r}
-sub_cluster <- subset(plot.data, som.unit.classif=="3")
-
-sub_data <- sub_cluster[,9:14] # just the sample types
-
-m.data <- melt(sub_data) 
-
-p <- ggplot(m.data, aes(x=variable, y=value))
-p + geom_point(alpha=0.5, position="jitter", size=1) + geom_boxplot(alpha=0.75, outlier.size=0) 
+plot(som, type = "codes")
 ```
 
-Looking at 
+head(plot.data)
+This is a function that spits out the variables I want.  I should write 
+```{r}
+#clusterVis Function
+#displays transformed data in a box plot and 
+clusterVis <- function(clustNum){
+  
+  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
+  sub_data <- sub_cluster[,9:14] # just the sample types
+  m.data <- melt(sub_data) 
+  p <- ggplot(m.data, aes(x=variable, y=value))
+  p + geom_point(alpha=0.5, position="jitter", size=1) + geom_boxplot(alpha=0.75, outlier.size=0) 
+}
+
+#Number of genes function, which gives you some basics about the clusters between 
+
+clusterNum <- function(clustNum){
+
+  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
+  print(paste("total number of genes in sub cluster is ", 
+              nrow(sub_cluster)
+              )
+        )
+
+  scwt <- subset(sub_cluster, genotype == "wt")
+  print(paste("total number of genes specific to wt is ", 
+              nrow(scwt)
+              )
+        )
+
+  sctf2 <- subset(sub_cluster, genotype == "tf2")
+  print(paste("total number of genes specific to wt is ", 
+              nrow(sctf2)
+              )
+        )
+  
+   print(paste("There are", 
+               length(intersect(scwt$gene, sctf2$gene)), 
+               " that are the same between wt and tf2"
+               )
+         )
+               
+}
+```
+###Cluster 1
+
+Sub cluster 1 is defined by up regulation of genes in Bmbr, which is the early leaflet region of the terminal leaflet. 
+
+```{r}
+clusterVis(1)
+clusterNum(1)
+```
+
+###Cluster 2
+
+Sub cluster 2 is defined by up regulation of genes in Cmbr, which is the base "marginal blastozone" region, which should be the most pluripotent in WT. 
+
+```{r}
+clusterVis(2)
+clusterNum(2)
+```
+
+###Cluster 3
+
+This cluster is specific to Cother, which is specific to the rachis region at the base. 
+
+```{r}
+clusterVis(3)
+clusterNum(3)
+```
+
+###Cluster 4 
+
+This cluster has genes that are preferentially up-regulated in Ambr, which is the tip most region that becomes the terminal leaflet.  This is the terminal leaflet blade region 
+```{r}
+clusterVis(4)
+clusterNum(4)
+```
+
+###Cluster 5 
+
+The cluster ihas genes that are preferentially up-regulated in Aother, which is the rachis region at the tip; what will eventually become the midvien of the terminal leaflet.
+
+```{r}
+clusterVis(5)
+clusterNum(5)
+```
+
+###Cluster  6
+
+The cluster ihas genes that are preferentially up-regulated in Bother, which is the rachis region at site of leaflet initiation.
+
+```{r}
+clusterVis(6)
+clusterNum(6)
+```
+
+#Now to compare 
 ##References
+
+```{r}
+
+
+```
+
 
 1. [R self Organizing map tutorial](http://www.r-bloggers.com/self-organising-maps-for-customer-segmentation-using-r/)

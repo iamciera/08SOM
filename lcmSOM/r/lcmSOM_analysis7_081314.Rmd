@@ -1,0 +1,247 @@
+#Analysis 7 - Getting a closer look at the clusters from the orignal clusters. 
+
+##Purpose
+
+To get start to understand the differences in GO categories between the clusters. This is the data from analysis1D. 
+
+###Part 1
+
+This will look into the number of genes that are the same between the clusters and the genotypes. With some basic visualization.
+
+Required Libraries
+
+```{r}
+library(VennDiagram)
+library(ggplot2)
+library(reshape)
+library(kohonen)
+library(goseq)
+library(GO.db)
+```
+
+###Visualize by Cluster
+Read in data used for GO enrichment analysis
+
+```{r}
+geneLength <- read.csv("../../../07GO_enrichment/requisiteData/normalized_genes_length.csv")
+cate <- read.table("../../../07GO_enrichment/requisiteData/melted.GOTable.txt",header=TRUE)
+```
+
+Read in data produced from analysis1D.
+```{r}
+plot.data <- read.table("../data/analysis1.som.data.small.ALLD.txt",header=TRUE)
+names(plot.data)
+```
+
+
+##Cluster Specific analysis
+Now I want to take a look at what are is going on exactly in these clusters. The clusters start with the bottom left, which is cluster number 1.
+
+This is a function that makes a boxplot showing the transformed values of expression in the clusters. 
+
+```{r}
+#clusterVis Function
+#displays transformed data in a box plot and 
+clusterVis <- function(clustNum){
+  
+  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
+  sub_data <- sub_cluster[,9:14] # just the sample types
+  m.data <- melt(sub_data) 
+  p <- ggplot(m.data, aes(x=variable, y=value))
+  p + geom_point(alpha=0.5, position="jitter", size=1) + geom_boxplot(alpha=0.75, outlier.size=0) 
+}
+```
+
+Number of genes function, which gives you some basics about the clusters between 
+
+```{r}
+clusterNum <- function(clustNum){
+
+  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
+  print(paste("total number of genes in sub cluster is ", 
+              nrow(sub_cluster)
+              )
+        )
+
+  scwt <- subset(sub_cluster, genotype == "wt")
+  print(paste("total number of genes in wt cluster is ", 
+              nrow(scwt)
+              )
+        )
+
+  sctf2 <- subset(sub_cluster, genotype == "tf2")
+  print(paste("total number of genes in tf2 cluster is ", 
+              nrow(sctf2)
+              )
+        )
+  
+  scIntersect <- as.data.frame(intersect(scwt$gene, sctf2$gene))
+   print(paste("There are", 
+               length(intersect(scwt$gene, sctf2$gene)), 
+               " that are the same between wt and tf2"
+               )
+         )
+  
+  ##Venn Diagram part
+  grid.newpage()
+  venn.plot <- draw.pairwise.venn(area1 = nrow(scwt),
+                              area2    = nrow(sctf2),
+                              cross.area = length(intersect(scwt$gene, sctf2$gene)),
+                              scaled       = F,
+                              category     = c("Wildtype", "tf2"),
+                              fill         = c("blue", "red"),
+                                alpha        = 0.3,
+                                lty          = "blank",
+                                cex          = 2,
+                                cat.cex      = 2,
+                                cat.pos      = c(315, 25),
+                                cat.dist     = 0.09,
+                                cat.just     = list(c(-1, -1), c(1, 1)),
+                                ext.pos      = 30,
+                                ext.dist     = -0.05,
+                                ext.length   = 0.85)
+  grid.draw(venn.plot)
+
+}
+
+
+```
+
+
+```{r}
+
+ 
+clusterGO <- function(clustNum){
+##GO Enrichment on the catergories
+
+#we need to first get the data in the right format.
+#First get the list of ITAG, 
+
+#sub_cluster
+sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
+scwt <- subset(sub_cluster, genotype == "wt")
+sctf2 <- subset(sub_cluster, genotype == "tf2")
+scIntersect <- as.data.frame(intersect(scwt$gene, sctf2$gene))
+
+itag.sc <- as.data.frame(sub_cluster$gene) 
+colnames(itag.sc)[1] <- "itag"
+itag.sc$sc <- 1  
+
+#scwt
+itag.scwt <- as.data.frame(scwt$gene) 
+colnames(itag.scwt)[1] <- "itag"
+itag.scwt$wt <- 1  
+
+#sctf2
+itag.sctf2 <- as.data.frame(sctf2$gene) 
+colnames(itag.sctf2)[1] <- "itag"
+itag.sctf2$tf2 <- 1  
+
+#Intersect
+itag.scIntersect <- as.data.frame(scIntersect[1]) 
+colnames(itag.scIntersect)[1] <- "itag"
+itag.scIntersect$intersect <- 1 
+
+#Merge all by itag
+ITAGmerge <- merge(itag.scIntersect, itag.scwt, by = "itag", all= TRUE)
+ITAGmerge <- merge(ITAGmerge, itag.sctf2, by = "itag", all = TRUE)
+matrixGO <- merge(ITAGmerge, geneLength, by = "itag", all = TRUE)
+matrixGO[is.na(matrixGO)] <- 0
+pat <- matrixGO
+
+#Now that we have the data in the right format we can proceed with GO enrichment.
+
+#First specify vector to loop over for each column
+
+sigType <- c("intersect", "wt", "tf2")
+
+  for(type in sigType) {
+  
+    genes = as.integer(pat[,type])
+    names(genes) = pat$itag
+    table(genes)
+    length(genes)
+  
+    pwf = nullp(genes,bias.data=pat$length)
+  
+    GO.wall = goseq(pwf,gene2cat = cate)
+    head(GO.wall)
+  
+  #This is going to correct for multiple testing.  You can specify the p-value cut-off of GO categories you are interested.
+  
+    enriched.GO = GO.wall$category[p.adjust(GO.wall$over_represented_pvalue, method = "BH") < 0.05]
+  
+    enriched.GO
+  
+    my.GO <- as.character(enriched.GO)
+    my.GO.table <- Term(my.GO)
+    my.GO.table
+    t <- as.matrix(my.GO.table)
+  
+    print(type) #this is for the knitr document
+    print(t) #this is for the knitr document
+  }
+}
+```
+
+vennDiagram Function:  
+
+
+###Cluster 1
+
+Sub cluster 1 is defined by up regulation of genes in Bmbr, which is the early leaflet region of the terminal leaflet. 
+
+```{r}
+clusterVis(1)
+clusterNum(1)
+clusterGO(1)
+```
+
+###Cluster 2
+
+Sub cluster 2 is defined by up regulation of genes in Cmbr, which is the base "marginal blastozone" region, which should be the most pluripotent in WT. 
+
+```{r}
+clusterVis(2)
+clusterNum(2)
+clusterGO(2)
+```
+
+###Cluster 3
+
+This cluster is specific to Cother, which is specific to the rachis region at the base. 
+
+```{r}
+clusterVis(3)
+clusterNum(3)
+clusterGO(3)
+```
+
+###Cluster 4 
+
+This cluster has genes that are preferentially up-regulated in Ambr, which is the tip most region that becomes the terminal leaflet.  This is the terminal leaflet blade region 
+```{r}
+clusterVis(4)
+clusterNum(4)
+clusterGO(4)
+```
+
+###Cluster 5 
+
+The cluster ihas genes that are preferentially up-regulated in Aother, which is the rachis region at the tip; what will eventually become the midvien of the terminal leaflet.
+
+```{r}
+clusterVis(5)
+clusterNum(5)
+clusterGO(5)
+```
+
+###Cluster  6
+
+The cluster ihas genes that are preferentially up-regulated in Bother, which is the rachis region at site of leaflet initiation.
+
+```{r}
+clusterVis(6)
+clusterNum(6)
+clusterGO(6)
+```

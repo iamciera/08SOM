@@ -52,7 +52,7 @@ clusterVis <- function(clustNum){
 }
 ```
 
-Number of genes function, which gives you some basics about the clusters between 
+Number of genes function, which gives you some basics about the clusters.
 
 ```{r}
 clusterNum <- function(clustNum){
@@ -103,14 +103,10 @@ clusterNum <- function(clustNum){
   grid.draw(venn.plot)
 
 }
-
-
 ```
 
 
 ```{r}
-
- 
 clusterGO <- function(clustNum){
 ##GO Enrichment on the catergories
 

@@ -121,7 +121,6 @@ The first step is to get it into the right format. First column being the genes,
 
 ```{r}
 mostDEgenes <- read.csv("../data/allGeneList.csv")
-head(mostDEgenes)
 
 mostDEgenes <- mostDEgenes[c(7, 1, 4)] #keep only needed columns (gene, type, mean)
 

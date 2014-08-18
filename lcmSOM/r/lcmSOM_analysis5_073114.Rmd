@@ -247,6 +247,6 @@ plot.data <- read.table("../data/ssom.data.analysis5.txt",header=TRUE)
 names(plot.data)
 dim(plot.data)
 
-p <- ggplot(plot.data, aes(PC1, PC2, colour=factor(ssom.unit.classif))) #notice I am using som_cluster and not unit.classif, because this is the larger SOM
+p <- ggplot(plot.data, aes(PC1, PC2, colour=factor(ssom.unit.classif))) 
 p + geom_point() + theme_bw()
 ```

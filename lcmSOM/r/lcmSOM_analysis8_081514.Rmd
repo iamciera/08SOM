@@ -1,0 +1,253 @@
+#Analysis 7 - Getting a closer look at the clusters from the clusters from the superSOM, 
+
+##Purpose
+
+To get start to understand the differences in GO categories between the superSOM clusters. 
+
+###Part 1
+
+This will look into the number of genes that are the same between the clusters and the genotypes. With some basic visualization.
+
+Required Libraries
+
+```{r}
+library(VennDiagram)
+library(ggplot2)
+library(reshape)
+library(kohonen)
+library(goseq)
+library(GO.db)
+```
+
+###Visualize by Cluster
+Read in data used for GO enrichment analysis
+
+```{r}
+geneLength <- read.csv("../../../07GO_enrichment/requisiteData/normalized_genes_length.csv")
+cate <- read.table("../../../07GO_enrichment/requisiteData/melted.GOTable.txt",header=TRUE)
+```
+
+Read in data produced from analysis1D.
+```{r}
+plot.data <- read.table("../data/ssom.data.analysis5d.txt",header=TRUE)
+names(plot.data)
+```
+
+
+##Cluster Specific analysis
+Now I want to take a look at what are is going on exactly in these clusters. The clusters start with the bottom left, which is cluster number 1.
+
+This is a function that makes a boxplot showing the transformed values of expression in the clusters. 
+
+```{r}
+#clusterVis Function
+#displays transformed data in a box plot 
+clusterVis <- function(clustNum){
+  
+  sub_cluster <- subset(plot.data, ssom.unit.classif==clustNum)
+  sub_data <- sub_cluster[,c(1, 9:14)] # just the sample types
+  m.data <- melt(sub_data) 
+  p <- ggplot(m.data, aes(x=variable, y=value, color = genotype))
+  p + geom_point(alpha=0.5,position="jitter", size=1) + 
+    geom_boxplot(alpha=0.75, outlier.size=0) + 
+    theme_bw()
+}
+```
+
+
+
+```{r}
+
+clusterGO <- function(clustNum){
+  ##GO Enrichment on the catergories
+   dev.off()
+  plot.new()
+  
+  #we need to first get the data in the right format.
+  #First get the list of ITAG
+ 
+  #sub_cluster
+  sub_cluster <- subset(plot.data, ssom.unit.classif==clustNum)
+  
+  itag.sc <- as.data.frame(sub_cluster$gene) 
+  colnames(itag.sc)[1] <- "itag"
+  itag.sc$sc <- 1    
+ 
+  #Since each orthologue between tf2 and wt are represented twice in this set, we have to keep only the unique ITAGs.
+  
+  itag.sc <- unique(itag.sc) #Check. Should cut the list in half. # dim(itag.sc) before and after
+  
+  #Merge all by itag
+  matrixGO <- merge(itag.sc, geneLength, by = "itag", all = TRUE)
+  matrixGO[is.na(matrixGO)] <- 0
+  pat <- matrixGO
+  
+  #Now that we have the data in the right format we can proceed with GO enrichment.
+  
+    genes = as.integer(pat[,"sc"])
+    names(genes) = pat$itag
+    table(genes)
+    length(genes)
+  
+    pwf = nullp(genes,bias.data=pat$length)
+  
+    GO.wall = goseq(pwf,gene2cat = cate)
+    head(GO.wall)
+  
+  #This is going to correct for multiple testing.  You can specify the p-value cut-off of GO categories you are interested.
+  
+    enriched.GO = GO.wall$category[p.adjust(GO.wall$over_represented_pvalue, method = "BH") < 0.05]
+  
+    enriched.GO
+  
+    my.GO <- as.character(enriched.GO)
+    my.GO.table <- Term(my.GO)
+    my.GO.table
+    t <- as.matrix(my.GO.table)
+
+    print(t) #this is for the knitr document
+}
+```
+
+
+```{r}
+clusterVis_line <- function(clustNum) {
+  sub_cluster <- subset(plot.data, ssom.unit.classif==clustNum)
+  sub_data <- sub_cluster[,c(1, 2, 9:14)] # just the sample types
+  sub_data <- melt(sub_data)
+  sub_data <- within(sub_data, lineGroup <- paste(genotype, gene,sep='.'))
+  ggplot(sub_data, aes(variable, value, group = lineGroup, color =  genotype )) + 
+    geom_line(alpha = .1, (aes(color = factor(genotype)))) + 
+    geom_point(alpha = .0)
+  }
+```
+
+```{r}
+#Prereq annotation files for function
+
+annotation1<- read.delim("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_ITAG_annotations.tsv", header=FALSE)  #Changed to the SGN human readable annotation
+colnames(annotation1) <- c("ITAG", "SGN_annotation")
+annotation2<- read.delim ("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_annotated.tsv")
+annotation <- merge(annotation1,annotation2, by = "ITAG")
+#Only Gene Name and ITAG
+annotation <- annotation[,c(1,5)]
+```
+
+Function
+```{r}
+genesInClust <- function(clustNum) {
+  sub_cluster <- subset(plot.data, ssom.unit.classif==clustNum)
+  sub_data <- as.data.frame(sub_cluster[,2])
+  colnames(sub_data) <- "ITAG"
+  resultsTable <- merge(sub_data,annotation,by = "ITAG", all.x=TRUE)
+  print(nrow(resultsTable))
+#  return(resultsTable <- unique(resultsTable))
+  return(unique(resultsTable))
+  }
+
+genesInClust <- function(clustNum, plot.data, annotation) {
+  sub_cluster <- subset(plot.data, ssom.unit.classif==clustNum)
+  sub_data <- as.data.frame(sub_cluster[,2])
+  colnames(sub_data) <- "ITAG"
+  resultsTable <- merge(sub_data,annotation,by = "ITAG", all.x=TRUE)
+  print(nrow(unique(resultsTable)))
+  return(unique(resultsTable))
+  }
+
+
+```
+vennDiagram Function:  
+
+###Cluster 1
+
+```{r}
+clusterVis(1)
+clusterVis_line(1)
+clusterGO(1)
+```
+
+###Cluster 2
+
+```{r}
+clusterVis(2)
+clusterVis_line(2)
+clusterGO(2)
+```
+
+###Cluster 3 
+
+Ambr in WT is higher than in *tf2* and the WT genes in this cluster have a tight pattern.
+
+```{r}
+clusterVis(3)
+clusterVis_line(3)
+clusterGO(3)
+```
+
+Understanding the GO categories of cluster 3.
+
+- [Phenylalanine ammonia lyase (PAL)](http://en.wikipedia.org/wiki/Phenylalanine_ammonia-lyase) is the first and committed step in the phenyl propanoid pathway and is therefore involved in the biosynthesis of the polyphenol compounds such as flavonoids, phenylpropanoids, and lignin in plants. 
+
+- [histidine ammonia-lyase activity](http://www.ebi.ac.uk/interpro/entry/IPR005921) - breaks down histidine, which is functionally attributed to [metal ion transport](http://link.springer.com/article/10.1007%2Fs00726-005-0247-0).
+
+- serine-type endopeptidase inhibitor activity - peptide cleaving.
+
+- [Chromoplasts](http://en.wikipedia.org/wiki/Chromoplast) are plastids, heterogeneous organelles responsible for pigment synthesis and storage in specific photosynthetic eukaryotes.
+
+- cotyledon development
+
+- Chromoplast 
+
+- [positive regulation of development, heterochronic](http://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0045962) Any process that modulates the consistent predetermined time point at which an integrated living unit or organism progresses from an initial condition to a later condition and increases the rate at which this time point is reached.
+
+###Cluster 4 
+
+```{r}
+clusterVis(4)
+clusterVis_line(4)
+clusterGO(4)
+```
+
+###Cluster 5 
+
+
+```{r}
+clusterVis(5)
+clusterVis_line(5)
+clusterGO(5) 
+```
+
+###Cluster  6
+
+```{r}
+clusterVis(6)
+clusterVis_line(6)
+clusterGO(6)
+```
+
+##Large SOM
+
+After viewing the `clusterVis_line()` clusters in `lcmSOM_analysis8_081514.Rmd`, I saw that there were a lot of noise that was associated in these main clusters.  I think if I make more clusters I can begin to see tighter gene expression clusters. I redid the clusters which are presented in the fie `analysis5d_081814.Rmd` where I specified for more clusters, this is the visulization of that.
+
+###Cmbr
+
+This is exploring the regions that differ in the CMBR.  What Clusters are very similar in everything BUT the CMBR?
+
+```{r}
+clusterVis(4)
+clusterVis_line(4)
+y <- genesInClust(4, plot.data, annotation)
+```
+
+I need to write something that looks at the statistical difference in tissue between each genotype.  In order to do that I have to subset based on tissue and do a t-test?  Do I need to correct for multiple testing? Ideally what information do I want from these clusters?
+
+1. I want clusters that are enriched in leaf genes. Maybe I could just color special for leaf genes?
+
+2. Significant differences between genotype at each tissue. 
+
+
+
+
+
+
+

@@ -10,6 +10,8 @@ The goal of this is to provide a Self Organizing Map (SOM) of the LCM data to un
 
 ##Analysis
 
+Each analysis that was performed. 
+
 `lcmSOM_analysis1.0a_071014.Rmd` - Testing using only significant genes. There was two ways I looked at this. 1.) Large SOM (6,6), which was a large some that was later callapsed to boader categories and 2.) Small SOM (3,2), which showed tissue specific genes.  *Compare the two lists*
 
 `lcmSOM_analysis1.5a_080414.Rmd` - Same as analysis1, but with tf2. There are overall less genes involved in this analysis.  This gives less genes in the analysis, but tighter PC clustering.  Also there were not tissue specific clusters in the small map (3,2). This tells me that the regions are more similar, possible because of further in differentiation processes. 
@@ -32,11 +34,20 @@ I continued by looking at the difference between all the clusters. Which showed 
 
 `lcmSOM_analysis4_072914.Rmd` - Doing analysis exactly like analysis1, but with top 25% of co-efficent of variation. I also compare the lists of genes, in particular and I find the similarities in the list of genes between the top 25% co-efficient of variation and the list of DE genes from all DE gene expression analysis. *I remade `allGeneListBothGenotypes_analysis5.csv` in analysis5 after this analysis was done.  It shouldnt change the results dramatically.* 
 
-`lcmSOM_analysis5_073114.Rmd` - The start is making a list from all the DE analysis. Then this is SuperSOM attempt one, based off Dan Chitwood's script.
+`lcmSOM_analysis5_073114.Rmd` - The start is making a list from all the DE analysis. Then this is SuperSOM attempt one, based off Dan Chitwood's script. 
+
+`lcmSOM_analysis5c_073114.Rmd` - Scaled seperatley by genotype. There is not much difference in the SuperSOM categories if you scale them seperatley and it is most likely the best way to do it, so this is the **Best SuperSOM**.
+
+`analysis5d_081814.Rmd` - After viewing the `clusterVis_line()` clusters in `lcmSOM_analysis8_081514.Rmd`, I saw that there were a lot of noise that was associated in these main clusters.  I think if I make more clusters I can begin to see tighter gene expression clusters.  
 
 `lcmSOM_analysis6_080114.Rmd` - SuperSOM based on the tutorial- not complete.  The main lesson learned is that the data structure of a superSOM is a list of lists, where you can incorporate many different types of data.  **The way Dan did it is the way the tutorial does it.**
 
-`lcmSOM_analysis7_080414.Rmd` - Full report on the similarities in gene lists between wt and tf2 from analysis1.0a and analysis1.5a.
+`lcmSOM_analysis7_080414.Rmd` - A closer look at the clusters from basic SOM, using the cluster data from `lcmSOM_analysis1d_080514.Rmd`.  
+
+`lcmSOM_analysis8_081514.Rmd` - A closer look at the clusters from superSOM created from `lcmSOM_analysis5c_073114.Rmd`.
+
+
+
 
 
 

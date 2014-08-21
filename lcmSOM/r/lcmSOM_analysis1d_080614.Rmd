@@ -143,6 +143,16 @@ names(data.val.small)
 summary(data.val.small)
 ```
 
+#Visualize back to PC Space
+
+```{r}
+plot.data <- read.table("../data/analysis1.som.data.small.ALLD.txt",header=TRUE)
+names(plot.data)
+
+p <- ggplot(plot.data, aes(PC1, PC2, colour=factor(som.unit.classif))) #use unit.classif for smaller dataset
+p + geom_point(alpha = .6) + facet_grid(.~genotype) + theme_bw()
+```
+
 ##References
 
 1. [R self Organizing map tutorial](http://www.r-bloggers.com/self-organising-maps-for-customer-segmentation-using-r/)

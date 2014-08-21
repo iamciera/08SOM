@@ -46,7 +46,7 @@ I continued by looking at the difference between all the clusters. Which showed 
 
 `lcmSOM_analysis8_081514.Rmd` - A closer look at the clusters from superSOM created from `lcmSOM_analysis5c_073114.Rmd`.
 
-
+`lcmSOM_analysis9_081814.Rmd` - A closer look at the wt cluster SOM from `lcmSOM_analysis1.0a_071014.Rmd` Just to see if I can get some understanding of gene clusters. 
 
 
 

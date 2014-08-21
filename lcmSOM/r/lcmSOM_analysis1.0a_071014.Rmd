@@ -1,6 +1,6 @@
 #Getting the most sig. differentiated genes between tissue
 
-The way I am approaching this is to get each list of sig DE genes between all DE anaylsis between tissue in WT and *tf2*, keep only the unique and see how many genes there are.
+The way I am approaching this is to get each list of sig DE genes between all DE anaylsis between tissue in WT, keep only the unique and see how many genes there are.
 
 ##Required Libraries
 

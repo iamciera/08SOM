@@ -180,17 +180,29 @@ genesInClust <- function(clustNum, data.val2, annotation) {
 #You first need to build a matrix then loop over original values for population of matrix.
 #Maybe build function that sets the size of the matrix?
 
-iterations = 6
+iterations = 5
 variables = 6
 
 output <- matrix(ncol=variables, nrow=iterations)
 
 for(i in 1:iterations){
-  output[i,] <- runif(2)
+  output[i,] <- runif(1)
   
 }
 
+u <- runif(1)
+
 output
+
+iterations = 10
+variables = 2
+
+output <- matrix(ncol=variables, nrow=iterations)
+
+for(i in 1:iterations){
+  output[i,] <- runif(2) # for each row
+}
+
 
 
 for (i in 1:clustNum) {

@@ -32,19 +32,23 @@ I continued by looking at the difference between all the clusters. Which showed 
 
 `lcmSOM_analysis3_072314.Rmd` - Testing only the leaf curated genes. **Not appropriate.  There are not clear clusters.**  It might be nice to overall with the full list of all DE genes. 
 
-`lcmSOM_analysis4_072914.Rmd` - Doing analysis exactly like analysis1, but with top 25% of co-efficent of variation. I also compare the lists of genes, in particular and I find the similarities in the list of genes between the top 25% co-efficient of variation and the list of DE genes from all DE gene expression analysis. *I remade `allGeneListBothGenotypes_analysis5.csv` in analysis5 after this analysis was done.  It shouldnt change the results dramatically.* 
+`lcmSOM_analysis4_072914.Rmd` - Doing analysis exactly like analysis1, but with top 25% of co-efficent of variation. I also compare the lists of genes, in particular and I find the similarities in the list of genes between the top 25% co-efficient of variation and the list of DE genes from all DE gene expression analysis. 
+
+I also looked at curated gene prescence in PC space.  
+
+*I remade `allGeneListBothGenotypes_analysis5.csv` in analysis5 after this analysis was done.  It shouldnt change the results dramatically.* 
 
 `lcmSOM_analysis5_073114.Rmd` - The start is making a list from all the DE analysis. Then this is SuperSOM attempt one, based off Dan Chitwood's script. 
 
-`lcmSOM_analysis5c_073114.Rmd` - Scaled seperatley by genotype. There is not much difference in the SuperSOM categories if you scale them seperatley and it is most likely the best way to do it, so this is the **Best SuperSOM**.
+`lcmSOM_analysis5c_073114.Rmd` - Scaled seperatley by genotype. There is not much difference in the SuperSOM categories if you scale them seperatley and it is most likely the best way to do it, so this is the **Best small  SuperSOM**.
 
-`analysis5d_081814.Rmd` - After viewing the `clusterVis_line()` clusters in `lcmSOM_analysis8_081514.Rmd`, I saw that there were a lot of noise that was associated in these main clusters.  I think if I make more clusters I can begin to see tighter gene expression clusters.  
+`analysis5d_081814.Rmd` - After viewing the `clusterVis_line()` clusters in `lcmSOM_analysis8_081514.Rmd`, I saw that there were a lot of noise that was associated in these main clusters.  I think if I make more clusters I can begin to see tighter gene expression clusters. **Best large SuperSOM**  
 
 `lcmSOM_analysis6_080114.Rmd` - SuperSOM based on the tutorial- not complete.  The main lesson learned is that the data structure of a superSOM is a list of lists, where you can incorporate many different types of data.  **The way Dan did it is the way the tutorial does it.**
 
 `lcmSOM_analysis7_080414.Rmd` - A closer look at the clusters from basic SOM, using the cluster data from `lcmSOM_analysis1d_080514.Rmd`.  
 
-`lcmSOM_analysis8_081514.Rmd` - A closer look at the clusters from superSOM created from `lcmSOM_analysis5c_073114.Rmd`.
+`lcmSOM_analysis8_081514.Rmd` - A closer look at the clusters from superSOM created from `lcmSOM_analysis5c_073114.Rmd` and `lcmSOM_analysis5c_073114.Rmd`.
 
 `lcmSOM_analysis9_081814.Rmd` - A closer look at the wt cluster SOM from `lcmSOM_analysis1.0a_071014.Rmd` Just to see if I can get some understanding of gene clusters. 
 

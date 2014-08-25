@@ -150,7 +150,7 @@ p <- ggplot(data.val, aes(PC1, PC2))
 p + geom_point()
 ```
 
-#1. Self Organizing Map - (6,6) Large
+#Self Organizing Map - (6,6) Large
 
 The size of the map is something that may cause differences in the genes that are clustered.  Using a small map size (3,2), I found they cluster in according to tissue type. This makes the interpretation of the results pretty straight forward. My only worry is that the map might not be large enough, considering [1], suggests that you size of the map based on count distribution, the goal being an even distribution, with no "peak" counts in any one cluster while also having no empty clusters.  
 
@@ -305,12 +305,11 @@ It appears as though we get clustering in tissue specific regions. When you set 
 2. Self Organizing Map- Small (3,2)
 -----------------------------
 
-The size of the map is something that may cause differences in the genes that are clustered.  Using a small map size (3,2), I found they cluster in according to tissue type. See below.
+The size of the map is something that may cause differences in the genes that are clustered.  Using a small map size (3,2), I found they cluster in according to tissue type. See below. Setting the seed makes a difference on how these cluster.  
 
 ```{r}
 
 som.data <- as.matrix(data.val[,c(8:13)])
-names(som.data)
 set.seed(2)
 
 som <- som(data=som.data, somgrid(3,2,"hexagonal")) # This is where you change the size of the map

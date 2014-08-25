@@ -241,7 +241,7 @@ y <- genesInClust(4, plot.data, annotation)
 
 I need to write something that looks at the statistical difference in tissue between each genotype.  In order to do that I have to subset based on tissue and do a t-test?  Do I need to correct for multiple testing? Ideally what information do I want from these clusters?
 
-1. I want clusters that are enriched in leaf genes. Maybe I could just color special for leaf genes?
+1. I want clusters that are enriched in leaf genes. Maybe I could just color special for leaf genes? done.
 
 2. Significant differences between genotype at each tissue. 
 

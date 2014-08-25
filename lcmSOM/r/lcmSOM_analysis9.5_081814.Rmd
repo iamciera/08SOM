@@ -1,0 +1,691 @@
+#Analysis 9 - Getting a closer look at the clusters from the clusters from basic some WT only.  
+
+##Purpose 
+
+This analysis is based off of `lcmSOM_analysis4_072914.Rmd`, where the original dataset was made.  The top 25% of co-efficent of variation. I should just make sure I add everything. 
+
+##Questions
+
+1. What type of gene co-expression patterns are found in this data?
+2. Is there any cluster that is enriched in genes from the curated leaf gene list?
+3. Are there GO categories that are enriched in the clusters? 
+4. If there are GO categories, what are the genes that are represented?
+
+##Caveats
+
+1. While the standard deviation of expression of each gene in each tissue were from the reps were calculated, this was not used when creating the self organized map. 
+
+
+##Analysis Set-up
+
+Required Libraries
+
+```{r}
+library(VennDiagram)
+library(ggplot2)
+library(reshape)
+library(kohonen)
+library(goseq)
+library(GO.db)
+library(knitr)
+source("./clusterFunctions.R")
+```
+
+Upload that dataset:
+
+```{r}
+genes25 <- read.csv("../data/analysis4.top25.csv")
+genes25 <- genes25[,c(2,9:14)]
+
+```
+
+```{r}
+scale_data <- as.matrix(t(scale(t(genes25[c(2:7)])))) 
+pca <- prcomp(scale_data, scale=TRUE) 
+
+summary(pca) 
+
+pca.scores <- data.frame(pca$x)
+
+data.val <- cbind(genes25, scale_data, pca.scores) 
+```
+
+
+##Visualizing the PCA
+
+```{r}
+p <- ggplot(data.val, aes(PC1, PC2)) 
+p + geom_point()
+```
+
+##Self Organizing Map - (6,6), large
+
+```{r}
+#subset only the scaled gene expression values
+
+set.seed(6)
+som <- som(data=scale_data, somgrid(6,6,"hexagonal")) # This is where you change the size of the map
+summary(som)
+```
+
+
+###Look at the SOM results
+```{r}
+plot(som, type = "codes")
+plot(som, type = "counts")
+plot(som, type="dist.neighbours")
+som$data <- data.frame(som$data) #changed to dataframe to extract column names easier. 
+
+data.val2 <- cbind(data.val,som$unit.classif,som$distances) 
+
+#fix to one regex
+data.val2$gene <- gsub("^(.*)[.].*", "\\1", data.val2$gene)
+data.val2$gene <- gsub("^(.*)[.].*", "\\1", data.val2$gene)
+
+```
+
+Upload the gene expression list.
+
+```{r}
+geneList1 <- read.csv("../../../06diffGeneExp/analysis/indvGenes/yasuCuratedGenes/pnas.1402835111.sd06.csv")
+
+#isolate the genes
+genesOfInterest <- geneList1[,c(1,3)]
+colnames(genesOfInterest) <- c("gene", "name")
+names(genesOfInterest) #check
+```
+
+```{r}
+#This is a ridiculas around assigning if a gene is a curated gene! 
+#Figure out more elegent way.
+data.val2$curated <- match(data.val2$gene, genesOfInterest$gene)
+data.val2$curated <- gsub("[[:digit:]]+", "yes", data.val2$curated)
+data.val2$curated[is.na(data.val2$curated)] <- "no"
+```
+
+Visualize the major clusters.  Here are the leaf curated genes in PC space. 
+
+```{r}
+head(data.val2)
+p <- ggplot(data.val2, aes(PC1, PC2, color = curated)) 
+
+p + geom_point(size=I(2), alpha = 0.6) +
+  scale_colour_manual(values=c("#cccccc", "#33ff33")) + 
+  theme_bw()
+```
+
+###Visualize by Cluster
+Read in data used for GO enrichment analysis.
+
+```{r}
+geneLength <- read.csv("../../../07GO_enrichment/requisiteData/normalized_genes_length.csv")
+cate <- read.table("../../../07GO_enrichment/requisiteData/melted.GOTable.txt",header=TRUE)
+```
+
+
+##Cluster 1
+```{r}
+clusterVis(1)
+clusterVis_PCA(1)
+clusterVis_line(1)
+##clusterGO(1)
+y <- genesInClust(1, data.val2, annotation)
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 2
+```{r}
+clusterVis(2)
+clusterVis_PCA(2)
+clusterVis_line(2)
+##clusterGO(2)
+y <- genesInClust(2, data.val2, annotation)
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+
+##Cluster 3
+High in the C regions. 
+
+```{r}
+clusterVis(3)
+clusterVis_PCA(3)
+#clusterVis_line(3)
+#clusterGO(3)
+y <- genesInClust(3, data.val2, annotation)
+kable(y, format = "latex", booktabs = TRUE)
+}
+
+```
+
+##Cluster 4
+
+Included: Solyc10g076790 & AT2G38120 & Encodes an auxin influx transporter.  AUX1 resides at the apical plasma membrane of protophloem cells and at highly dynamic subpopulations of Golgi apparatus and endosomes in all cell types.  AUX1 action in the lateral root cap and/or epidermal cells influences lateral root initiation and positioning.
+
+Solyc06g065630 & AT5G11320 & Belongs to the YUC gene family.  Encodes a predicted flavin monooxygenase YUC4 involved in auxin biosynthesis and plant development.
+
+Solyc01g087990 & AT5G13790 & AGL15 (AGAMOUS-Like 15) is a member of the MADS domain family of regulatory factors. Although AGL15 is preferentially expressed during embryogenesis, AGL15 is also expressed in leaf primordia, shoot apical meristems and young floral buds, suggesting that AGL15 may play a role during post-germinative development. Transgenic plants that ectopically express AGL15 show delays in the transition to flowering, perianth abscission and senescence and fruit and seed maturation.
+
+Solyc01g034150 & AT5G44740 & UMUC-like DNA repair family protein; similar to REV1 (Reversionless 1), damaged DNA binding / magnesium ion binding / nucleotidyltransferase [Arabidopsis thaliana] (TAIR:AT5G44750.1); similar to Os01g0757800 [Oryza sativa (japonica cultivar-group)] (GB:NP_001044297.1); similar to putative DNA polymerase [Oryza sativa (japonica cultivar-group)] (GB:BAD87579.1); contains InterPro domain UMUC-like DNA-repair protein; (InterPro:IPR001126)
+
+```{r}
+clusterVis(4)
+clusterVis_PCA(4)
+#clusterVis_line(4)
+#clusterGO(4)
+y <- genesInClust(4, data.val2, annotation)
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 5
+High in both cmbr and bmbr, leaflets and true marginal blastizone.
+
+Included: 
+
+Solyc05g051380 & AT5G10510 & AIL6 (AINTEGUMENTA-LIKE 6); DNA binding / transcription factor; similar to AIL7 (AINTEGUMENTA-LIKE 7), DNA binding / transcription factor [Arabidopsis thaliana] (TAIR:AT5G65510.1); similar to 117M18_31 [Brassica rapa] (GB:AAZ66950.1); contains InterPro domain Pathogenesis-related transcriptional factor and ERF; (InterPro:IPR001471)
+
+Solyc05g041220 & AT5G35770 & A recessive mutation in the Arabidopsis STERILE APETALA (SAP) causes severe aberrations in inflorescence  and flower and ovule development.
+
+```{r}
+clusterVis(5)
+clusterVis_PCA(5)
+#clusterVis_line(5)
+#clusterGO(5)
+y <- genesInClust(5, data.val2, annotation)
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+
+##Cluster 6 
+Up in Bmbr (early leaflets), low in everything else. 
+
+Solyc01g007760 & AT2G36010 & Member of the E2F transcription factors, (cell cycle genes),
+
+Solyc03g007560 & AT5G41770 & crooked neck protein, putative / cell cycle protein, putative; similar to crooked neck protein, putative / cell 
+```{r}
+clusterVis(6)
+clusterVis_PCA(6)
+#clusterVis_line(6)
+#clusterGO(6)
+y <- genesInClust(6, data.val2, annotation)
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 7
+Tight cluster. WTcother high. 
+
+Maybe transporters?
+
+```{r}
+clusterVis(7)
+clusterVis_PCA(7)
+clusterVis_line(7)
+#clusterGO(7)
+y <- genesInClust(7, data.val2, annotation)
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 8
+
+This is very similar to cluster 7. These two should most likely be together. 
+Large Cluster.
+```{r}
+clusterVis(8)
+clusterVis_PCA(8)
+clusterVis_line(8)
+clusterGO(8)
+y <- genesInClust(8, data.val2, annotation) 
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 9
+This one is hard to interpret. 
+
+
+```{r}
+clusterVis(9)
+clusterVis_PCA(9)
+clusterVis_line(9)
+clusterGO(9)
+y <- genesInClust(9, data.val2, annotation) 
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 10
+
+```{r}
+clusterVis(10)
+clusterVis_PCA(10)
+clusterVis_line(10)
+clusterGO(10)
+y <- genesInClust(10, data.val2, annotation) 
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 11 
+
+```{r}
+clusterVis(11)
+clusterVis_PCA(11)
+clusterVis_line(11)
+clusterGO(11)
+y <- genesInClust(11, data.val2, annotation) 
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+##Cluster 12 
+
+```{r}
+clusterVis(12)
+clusterVis_PCA(12)
+clusterVis_line(12)
+clusterGO(12)
+y <- genesInClust(12, data.val2, annotation) 
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 13 
+
+```{r}
+clusterVis(13)
+clusterVis_PCA(13)
+clusterVis_line(13)
+clusterGO(13)
+y <- genesInClust(13, data.val2, annotation) 
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 14 
+
+```{r}
+clusterVis(14)
+clusterVis_PCA(14)
+clusterVis_line(14)
+clusterGO(14)
+y <- genesInClust(14, data.val2, annotation) 
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 15
+
+```{r}
+clusterVis(15)
+clusterVis_PCA(15)
+clusterVis_line(15)
+clusterGO(15)
+y <- genesInClust(15, data.val2, annotation) 
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+
+##Cluster 16
+
+```{r}
+clusterVis(16)
+clusterVis_PCA(16)
+clusterVis_line(16)
+clusterGO(16)
+y <- genesInClust(16, data.val2, annotation) 
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+
+##Cluster 17
+
+Solyc12g006340 & AT1G30330 & Encodes a member of the auxin response factor family. Mediates auxin response via expression of auxin regulated genes. Acts redundantly with ARF8 to control stamen elongation and flower maturation. Expression of ARF6 is controlled by miR167.\\
+\addlinespace
+Solyc12g006350 & AT1G30330 & Encodes a member of the auxin response factor family. Mediates auxin response via expression of auxin regulated genes. Acts redundantly with ARF8 to control stamen elongation and flower maturation. Expression of ARF6 is controlled by miR167.\\
+
+lyc11g061760 & AT5G13070 & MSF1-like family protein; similar to hypothetical protein DDBDRAFT_0188914 [Dictyostelium discoideum AX4] (GB:XP_635610.1); similar to Os02g0717900 [Oryza sativa (japonica cultivar-group)] (GB:NP_001047936.1); contains InterPro domain Iron dependent repressor; (InterPro:IPR001367); contains InterPro domain MSF1; (InterPro:IPR006797)\\
+
+Solyc12g006340 & AT1G30330 & Encodes a member of the auxin response factor family. Mediates auxin response via expression of auxin regulated genes. Acts redundantly with ARF8 to control stamen elongation and flower maturation. Expression of ARF6 is controlled by miR167.\\
+
+Solyc05g015730 & AT5G10140 & MADS-box protein encoded by FLOWERING LOCUS C - transcription factor that functions as a repressor of floral transition
+
+Solyc04g007000 & AT1G13260 & Encodes an AP2/B3 domain transcription factor which is upregulated in response to low temperature. It contains a B3 DNA binding domain. It has circadian regulation and may function as a negative growth regulator.\\
+
+Solyc01g058030 & AT1G47990 & Encodes a gibberellin 2-oxidase. AtGA2OX4 expression is responsive to cytokinin and KNOX activities.\\
+Solyc01g058040 & AT1G02400 & Encodes a gibberellin 2-oxidase.\\
+
+Solyc01g010970 & AT1G69440 & Encodes ARGONAUTE7, a member of the ARGONAUTE family, characterised by the presence of PAZ and PIWI domains. Involved in the regulation of developmental timing. Required for the accumulation of TAS3 ta-siRNAs but not for accumulation of miR171, miR173, miR390 or mi391.   Localized in mature rosette leaves and floral buds.\\
+
+```{r}
+clusterVis(17)
+clusterVis_PCA(17)
+clusterVis_line(17)
+clusterGO(17)
+y <- genesInClust(17, data.val2, annotation) 
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+Cluster 18
+
+Similar to 17, except wtcother remains high. 
+
+Solyc11g008830 & AT1G65620 & required for formation of a symmetric flat leaf lamina, encodes a member of a family of proteins characterized by cysteine repeats and a leucine zipper; involved in KNOX gene regulation.   Acts together with ASL1 in proximal-distal symmetry determination.\\
+
+Solyc03g115270 & AT5G39280 & member of Alpha-Expansin Gene Family. Naming convention from the Expansin Working Group (Kende et al, 2004. Plant Mol Bio)\\
+
+Solyc03g093310 & AT5G07670 & F-box family protein; similar to F-box family protein [Arabidopsis thaliana] (TAIR:AT5G51380.1); similar to Os02g0658500 [Oryza sativa (japonica cultivar-group)] (GB:NP_001047636.1); similar to Os11g0641200 [Oryza sativa (japonica cultivar-group)] (GB:NP_001068351.1); similar to Leucine Rich Repeat family protein, expressed [Oryza sativa (japonica cultivar-group)] (GB:ABA95013.1); contains InterPro domain Cyclin-like F-box; (InterPro:IPR001810)\\
+\addlinespace
+```{r}
+clusterVis(18)
+clusterVis_PCA(18)
+clusterVis_line(18)
+clusterGO(18)
+y <- genesInClust(18, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 19
+
+Solyc10g079750 & AT2G41370 & Encodes a cytoplasmic and nuclear-localized NPR1 like protein with BTB/POZ domain and ankyrin repeats. Interacts with BOP1 and appears to be genetically redundant with BOP1.bop1/bop2 double mutants have longer leaves, often with leaflets on the petiole, and asymmetric flowers with extra organs.\\
+
+Solyc10g086530 & AT2G37650 & scarecrow-like transcription factor 9 (SCL9); similar to scarecrow-like transcription factor 14 (SCL14) [Arabidopsis thaliana] (TAIR:AT1G07530.1); similar to SCARECROW-like protein [Lilium lon (GB:BAC77269.2); similar to Os03g0690600 [Oryza sativa (japonica cultivar-group)] (GB:NP_001050952.1); contains InterPro domain GRAS transcription factor; (InterPro:IPR005202)\\
+
+Solyc05g054170 & AT4G17230 & Encodes a scarecrow-like protein (SCL13). Member of GRAS gene family.\\
+
+Solyc03g112590 & AT5G03340 & (Cell division control protein 48 homolog E); ATPase; Identical to Cell division control protein 48 homolog E (AtCDC48e) 
+
+Solyc02g093860 & AT5G40780 & Encodes LHT1 (lysine histidine transporter), a high-affinity transporter for cellular amino acid uptake in both root epidermis and leaf mesophyll.\\
+
+Solyc01g087450 & AT5G21080 & similar to cyclin-related [Arabidopsis thaliana] (TAIR:AT2G41830.1); similar to putative cyclin-related protein [Malus x domestica] 
+
+```{r}
+clusterVis(19)
+clusterVis_PCA(19)
+clusterVis_line(19)
+clusterGO(19)
+y <- genesInClust(19, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+
+##Cluster 20
+
+This is the opposite.  It is low in the marginal blastozone regions. Starting to see definite photosynthetic genes,
+```{r}
+clusterVis(20)
+clusterVis_PCA(20)
+clusterVis_line(20)
+clusterGO(20)
+y <- genesInClust(20, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 21
+Same as Cluster 20, It is low in the marginal blastozone regions. 
+```{r}
+clusterVis(21)
+clusterVis_PCA(21)
+clusterVis_line(21)
+clusterGO(21)
+y <- genesInClust(21, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 22
+ similar pattern as 20 and 21
+```{r}
+clusterVis(22)
+clusterVis_PCA(22)
+clusterVis_line(22)
+clusterGO(22)
+y <- genesInClust(22, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 23
+
+```{r}
+clusterVis(23)
+clusterVis_PCA(23)
+clusterVis_line(23)
+clusterGO(23)
+y <- genesInClust(23, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+
+##Cluster 24 
+High in ambr and bmbr.
+
+A few interesting genes:
+
+Alot of atpase.  Many genes that have mutant characterizations. 
+```{r}
+clusterVis(24)
+clusterVis_PCA(24)
+clusterVis_line(24)
+clusterGO(24)
+y <- genesInClust(24, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+
+##Cluster 25
+same pattern as 24 high in ambr and wtbmbr.
+```{r}
+clusterVis(25)
+clusterVis_PCA(25)
+clusterVis_line(25)
+clusterGO(25)
+y <- genesInClust(25, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 26
+```{r}
+clusterVis(26)
+clusterVis_PCA(26)
+clusterVis_line(26)
+clusterGO(26)
+y <- genesInClust(26, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+
+##Cluster 27
+```{r}
+clusterVis(27)
+clusterVis_PCA(27)
+clusterVis_line(27)
+clusterGO(27)
+y <- genesInClust(27, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 28
+```{r}
+clusterVis(28)
+clusterVis_PCA(28)
+clusterVis_line(28)
+clusterGO(28)
+y <- genesInClust(28, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+ ##Cluster 29
+```{r}
+clusterVis(29)
+clusterVis_PCA(29)
+clusterVis_line(29)
+clusterGO(29)
+y <- genesInClust(29, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 30
+```{r}
+clusterVis(30)
+clusterVis_PCA(30)
+clusterVis_line(30)
+clusterGO(30)
+y <- genesInClust(30, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+##Cluster 31
+```{r}
+clusterVis(31)
+clusterVis_PCA(31)
+clusterVis_line(31)
+clusterGO(31)
+y <- genesInClust(31, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+##Cluster 32
+
+Aothoer and Bother up-regulated compared to mbr.
+```{r}
+clusterVis(32)
+clusterVis_PCA(32)
+clusterVis_line(32)
+clusterGO(32)
+y <- genesInClust(32, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+##Cluster 33
+
+Solyc01g080770 & AT4G20270 & Encodes a CLAVATA1-related receptor kinase-like protein required for both shoot and flower meristem function.  It has a broad expression pattern and is involved in vascular strand development in the leaf, control of leaf shape, size and symmetry, male gametophyte development and ovule specification and function.
+
+
+
+Aothoer and Bother up-regulated compared to mbr. Very Similar to Cluster 34.
+```{r}
+clusterVis(33)
+clusterVis_PCA(33)
+clusterVis_line(33)
+clusterGO(33)
+y <- genesInClust(33, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+Cluster 34
+```{r}
+clusterVis(34)
+clusterVis_PCA(34)
+clusterVis_line(34)
+clusterGO(34)
+y <- genesInClust(34, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+Cluster 35
+
+Higher is o regions than MBR
+```{r}
+clusterVis(35)
+clusterVis_PCA(35)
+clusterVis_line(35)
+clusterGO(35)
+y <- genesInClust(35, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+##Cluster 36
+
+Solyc08g066500 & AT1G52150 & Member of the class III HD-ZIP protein family. Contains homeodomain and leucine zipper domain. Critical for vascular development and negatively regulates vascular cell differentiation.
+```{r}
+clusterVis(36)
+clusterVis_PCA(36)
+clusterVis_line(36)
+clusterGO(36)
+y <- genesInClust(36, data.val2, annotation) 
+
+kable(y, format = "latex", booktabs = TRUE)
+}
+```
+
+Conclusions
+
+What if this data analysis yields two parts 
+
+1. DE analysis: The analysis of WT, where the furthest we get is GO categories.  This will also aid in the the three clusters.
+
+2. I can then look at the individual clusters and see how they are related to each other in the trifoliate data.  To get a better idea about how related these genes are, you could try doing a chord map. Are there genes that are described in both data sets, yet *trifoilate* different.
+
+The key question is, what do my hypotheses look like if represented in my data?
+
+Q1: What are the genes that are differentiatially expressed between the marginal blastozone and the rachis regions 
+
+Q2: Is there a differentiation of tissue from high to low  along the longitudinal axis?
+
+Q3: How does *trifoilate* differ?  Are there clusters that are the same in all respects, with small exceptions?  What are those genes?
+
+
+Now that I know my data here are the genes. Can I do a t-test between the areas I am interested in?  Is that allowed?  Especially after scaling the data?  Can I put back in the standard deviation?  Is that possible, or is all I am left with is sd of the number of genes?
+
+I need to write something that looks at the statistical difference in tissue between each genotype.  In order to do that I have to subset based on tissue and do a t-test?  Do I need to correct for multiple testing? Ideally what information do I want from these clusters?
+
+1. I want clusters that are enriched in leaf genes. Maybe I could just color special for leaf genes?
+
+2. Significant differences between genotype at each tissue. 
+
+
+##How much intersect is there between my genes and the curated gene list?
+```{r}
+length(intersect(data.val2$gene, genesOfInterest$gene) ) #77
+```
+
+Only 51?  Is that right?  Double check.  Are there only 51 leaf curated genes differentially expressed?  Maybe I need to be looking at a larger subset.  25% co-efficient of variation. In `lcmSOM_analysis4_072914.Rmd`, I looked into this a bit more.  
+
+```{r, eval=FALSE}
+#From lcmSOM_analysis4_072914.Rmd
+intersect(genesOfInterest$gene, countData$X) #There are only 217 leaf curated genes in the normalized read counts. 
+intersect(genesOfInterest$gene, data.val.allGenes25$gene) # There are only 77 which are in the top 25%
+#There are 51 which overlap with the DE genes. 
+```
+
+I have to make a decision between 
+
+
+

@@ -43,9 +43,6 @@ countData$region <- ifelse(grepl("a", countData$sample, ignore.case = T), "A",
 countData$type <- paste(countData$region, countData$tissue,  sep = "")
 head(countData)
 
-#Subset by Genotype, since we will not be looking at tf2 at this stage
-countData <- subset(countData, genotype == "wt")
-
 #All get a list of all ITAG genes.
 
 
@@ -121,10 +118,9 @@ head(allGenes)
 #Change from long to wide data format
 allGene.long <- cast(mostDEgenes, gene ~ type, value.var = mean, fun.aggregate = "mean")  #why did I have to specify "mean" here? Are there duplicates of types? Double check later. 
 
-mostDEgene.long <- as.data.frame(mostDEgene.long) #or does not keep column names during transformation. 
-names(mostDEgene.long)
+allGene.long <- as.data.frame(allGene.long) #or does not keep column names during transformation. 
 
-scale_data <- as.matrix(t(scale(t(mostDEgene.long[c(2:7)])))) 
+scale_data <- as.matrix(t(scale(t(allGene.long[c(2:7)])))) 
 
 
 #Principle Component Analysis
@@ -133,7 +129,7 @@ pca <- prcomp(scale_data, scale=TRUE)
 summary(pca) 
 pca.scores <- data.frame(pca$x)
 
-data.val <- cbind(allGenes.long, scale_data, pca.scores) 
+data.val <- cbind(allGene.long, scale_data, pca.scores) 
 head(data.val)
 ```
 
@@ -144,7 +140,7 @@ There is not clear clustering in these genes. I don't think using all the genes 
 
 ```{r}
 p <- ggplot(data.val, aes(PC1, PC2))
-p + geom_point(alpha = 0.3)
+p + geom_point(alpha = 0.5)
 ```
 
 ##1. Self Organizing Map

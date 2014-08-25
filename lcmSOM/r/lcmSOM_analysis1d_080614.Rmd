@@ -60,9 +60,11 @@ head(data.val)
 
 Looks to be three major clusters. 
 
+
 ```{r}
 p <- ggplot(data.val, aes(PC1, PC2)) 
-p + geom_point(alpha = .6)
+analysis1d_plot1 <- p + geom_point(size = 2, alpha = .7)
+analysis1d_plot1
 ```
 
 ------------
@@ -78,7 +80,7 @@ The size of the map is something that may cause differences in the genes that ar
 names(data.val)
 som.data <- as.matrix(data.val[,c(9:14)])
 head(som.data)
-set.seed(5)
+set.seed(6)
 
 som <- som(data=som.data, somgrid(3,2,"hexagonal")) # This is where you change the size of the map
 
@@ -98,7 +100,6 @@ plot(som, type ="changes")
 Here with the small map, each tissue has a tissue specific cluster. 
 
 ```{r}
-plot(som, type = "codes")
 ```
 
 ###Count Plot - Small

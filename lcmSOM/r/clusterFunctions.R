@@ -52,6 +52,21 @@ clusterVis <- function(clustNum){
     theme_bw()
 }
 
+clusterVis2 <- function(clustNum){
+  
+  sub_cluster <- subset(data.val2, som$unit.classif==17)
+  sub_data <- sub_cluster[,c(1, 8:13)] # just the sample types
+  m.data <- melt(sub_data) 
+  m.data$region <- ifelse(grepl("wta", m.data$variable, ignore.case = T), "tip", 
+                         ifelse(grepl("wtc", m.data$variable, ignore.case = T), "middle", "base"))
+  m.data$variable <- ifelse(grepl("other", m.data$variable, ignore.case = T), "other", 
+                          ifelse(grepl("mbr", m.data$variable, ignore.case = T), "mbr", "NA"))
+  p <- ggplot(m.data, aes(x=variable, y=value))
+  p + geom_point(alpha=0.5,position="jitter", size=1) + 
+    geom_boxplot(alpha=0.75, outlier.size=0) + 
+    theme_bw() + facet_grid(region ~ .)
+}
+
 
 
 ###clusterGO()
@@ -180,37 +195,18 @@ genesInClust <- function(clustNum, data.val2, annotation) {
 #You first need to build a matrix then loop over original values for population of matrix.
 #Maybe build function that sets the size of the matrix?
 
-iterations = 5
-variables = 6
-
-output <- matrix(ncol=variables, nrow=iterations)
-
-for(i in 1:iterations){
-  output[i,] <- runif(1)
-  
-}
-
-u <- runif(1)
-
-output
-
-iterations = 10
-variables = 2
-
-output <- matrix(ncol=variables, nrow=iterations)
-
-for(i in 1:iterations){
-  output[i,] <- runif(2) # for each row
-}
-
-
-
-for (i in 1:clustNum) {
-  subClusterA <- subset(data.val2, som$subClusterA == i)
-  subClusterB <- subClusterA[,c(1,8:13,22)] #select only the columns I need
-    for (i in 1:clustNum)
-      subClusterB <- subset(data.val2, som$subClusterB == i)
-      
-  length(intersect(sub_clusterA, sub_clusterB))
-  
-}
+#iterations = 6
+#variables = 6
+# 
+# output <- matrix(ncol=variables, nrow=iterations)
+# 
+# for (i in 1:clustNum) {
+#   subClusterA <- subset(data.val2, som$subClusterA == i)
+#   subClusterB <- subClusterA[,c(1,8:13,22)] #select only the columns I need
+#     
+#       for (k in 1:variables)
+#       subClusterB <- subset(data.val2, som$subClusterB == k)
+#       
+#     output[i,] <- length(intersect(sub_clusterA, sub_clusterB[k]))
+#   
+# }

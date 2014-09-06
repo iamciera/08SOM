@@ -57,13 +57,13 @@ clusterVis2 <- function(clustNum){
   sub_cluster <- subset(data.val2, som$unit.classif==17)
   sub_data <- sub_cluster[,c(1, 8:13)] # just the sample types
   m.data <- melt(sub_data) 
-  m.data$region <- ifelse(grepl("wta", m.data$variable, ignore.case = T), "tip", 
-                         ifelse(grepl("wtc", m.data$variable, ignore.case = T), "middle", "base"))
-  m.data$variable <- ifelse(grepl("other", m.data$variable, ignore.case = T), "other", 
-                          ifelse(grepl("mbr", m.data$variable, ignore.case = T), "mbr", "NA"))
-  p <- ggplot(m.data, aes(x=variable, y=value))
+  m.data$region <- ifelse(grepl("wta", m.data$variable, ignore.case = T), "A.tip", 
+                         ifelse(grepl("wtc", m.data$variable, ignore.case = T), "B.middle", "C.base"))
+  m.data$tissue <- ifelse(grepl("other", m.data$variable, ignore.case = T), "rachis", 
+                          ifelse(grepl("mbr", m.data$variable, ignore.case = T), "margin", "base"))
+  p <- ggplot(m.data, aes(x=tissue, y=value))
   p + geom_point(alpha=0.5,position="jitter", size=1) + 
-    geom_boxplot(alpha=0.75, outlier.size=0) + 
+    geom_boxplot(alpha=0.70, outlier.size=0) + 
     theme_bw() + facet_grid(region ~ .)
 }
 

@@ -38,6 +38,7 @@ I also looked at curated gene prescence in PC space.
 
 *I remade `allGeneListBothGenotypes_analysis5.csv` in analysis5 after this analysis was done.  It shouldnt change the results dramatically.* 
 
+##SuperSOMs
 `lcmSOM_analysis5_073114.Rmd` - The start is making a list from all the DE analysis. Then this is SuperSOM attempt one, based off Dan Chitwood's script. 
 
 `lcmSOM_analysis5c_073114.Rmd` - Scaled seperatley by genotype. There is not much difference in the SuperSOM categories if you scale them seperatley and it is most likely the best way to do it, so this is the **Best small  SuperSOM**.
@@ -52,8 +53,9 @@ I also looked at curated gene prescence in PC space.
 
 `lcmSOM_analysis9_081814.Rmd` - A closer look at the wt cluster SOM from `lcmSOM_analysis1.0a_071014.Rmd` Just to see if I can get some understanding of gene clusters. 
 
+`lcmSOM_analysis9.5_081814.Rmd` - 
 
-
+`lcmSOM_analysis10_082514` - Comparing the clusters.  This is creating SOMs that can be anazlysed further for chord plots. In this particular expample we are comparing seed size between the small (3,2) SOMs with top 25% co variance data.  **Best wildtype only SOMs**
 
 
 

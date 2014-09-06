@@ -47,11 +47,11 @@ I continued by looking at the difference between all the clusters. Which showed 
 
 `lcmSOM_analysis6_080114.Rmd` - SuperSOM based on the tutorial- not complete.  The main lesson learned is that the data structure of a superSOM is a list of lists, where you can incorporate many different types of data.  **The way Dan did it is the way the tutorial does it.**
 
-`lcmSOM_analysis7_080414.Rmd` - A closer look at the clusters from basic SOM, using the cluster data from `lcmSOM_analysis1d_080514.Rmd`.  
+`lcmSOM_analysis7_080414.Rmd` - A closer look at the clusters from basic SOM with *BOTH* genotypes, using the cluster data from `lcmSOM_analysis1d_080514.Rmd`.  
 
 `lcmSOM_analysis8_081514.Rmd` - A closer look at the clusters from superSOM created from `lcmSOM_analysis5c_073114.Rmd` and `lcmSOM_analysis5c_073114.Rmd`.
 
-`lcmSOM_analysis9_081814.Rmd` - A closer look at the wt cluster SOM from `lcmSOM_analysis1.0a_071014.Rmd` Just to see if I can get some understanding of gene clusters. 
+`lcmSOM_analysis9_081814.Rmd` - A closer look at the small wt cluster SOM from `lcmSOM_analysis1.0a_071014.Rmd` Just to see if I can get some understanding of gene clusters. 
 
 `lcmSOM_analysis9.5_081814.Rmd` - 
 

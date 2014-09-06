@@ -32,12 +32,9 @@ Main Questions
 
 ```{r, echo=FALSE}
 ##Load in prereqs
-library(VennDiagram)
 library(ggplot2)
 library(reshape)
 library(kohonen)
-library(goseq)
-library(GO.db)
 library(knitr)
 source("../r/clusterFunctions.R")
 ```
@@ -69,7 +66,9 @@ Differential Gene Expression & GO enrichment
 
 Subset Normalized read count
 ========================================================
-
+```{r, echo = FALSE, eval=FALSE}
+##This code largely reflects lcmSOM_analysis4_072914.Rmd
+```
 There are two choices to subset the data:
 
 1. Get list of all genes that are significantly differentially expressed from all DE analysis: 3580 unique genes
@@ -77,7 +76,9 @@ There are two choices to subset the data:
 
 Subset Normalized read count
 ========================================================
-
+```{r, echo = FALSE, eval=FALSE}
+##This code largely reflects lcmSOM_analysis4_072914.Rmd
+```
 ## 25% co-efficient of variation
 
 1. Most genes are in both
@@ -85,19 +86,13 @@ Subset Normalized read count
 3. More Direct
 4. Similar results from both analyses can be added evidence for robustness of conclusions. 
 
-```{r, echo = FALSE}
-##This code largely reflects lcmSOM_analysis4_072914.Rmd
-
-
-```
-
 
 Principle Component Analysis
 ========================================================
-left: 60%
+left: 50%
 
 ```{r echo=FALSE}
-#Code from analsis 9.5
+#Code from `lcmSOM_analysis9_081814.Rmd`
 library(ggplot2)
 genes25 <- read.csv("../data/analysis4.top25.csv")
 genes25 <- genes25[,c(2,9:14)]
@@ -113,26 +108,93 @@ p <- ggplot(data.val, aes(PC1, PC2))
 p + geom_point()
 ```
 ***
-The first two PCA explain 50% of the variance.
+```{r, echo=FALSE}
+p <- ggplot(data.val, aes(PC3, PC4)) 
+p + geom_point()
+```
 
 Co-expression analysis 
 ========================================================
+
+Group similar expression patterns to each other. 
+
+
+Self Organizing Maps 
+========================================================
+
+
+Self Organizing Maps - SMALL (3,2)
+========================================================
+title:FALSE
+
+![map](images/img9.png)
+
+***
+
+```{r, echo=FALSE}
+#Anlalysis from lcmSOM_analysis9_081814.Rmd
+
+set.seed(6)
+som <- som(data=scale_data, somgrid(3,2,"hexagonal")) # This is where you change the size of the map
+plot(som, type = "codes")
+```
+
 
 Self Organizing Maps - SMALL (3,2)
 ========================================================
 title:FALSE
 
 ```{r, echo=FALSE}
-set.seed(6)
-som <- som(data=scale_data, somgrid(3,2,"hexagonal")) # This is where you change the size of the map
-plot(som, type = "codes")
-clusterGO(1)
+data.val2 <- cbind(data.val,som$unit.classif,som$distances) #bring 
 
+#rename
+names(data.val2)[20] <- "unit.classif"
+data.val2$unit.classif <- as.factor(data.val2$unit.classif)
+
+#visualize
+data.val2$unit.classif <- as.factor(data.val2$unit.classif)
+p <- ggplot(data.val2, aes(PC1, PC2, color = unit.classif)) 
+p + geom_point(size=I(3), alpha = 0.6) +
+  theme_bw()
+```
+***
+```{r, echo=FALSE}
+
+p <- ggplot(data.val2, aes(PC3, PC4, color = unit.classif)) 
+p + geom_point(size=I(3), alpha = 0.6) +
+  theme_bw()
 ```
 
-Self Organizing Maps - LARGE
+Cluster 2 
 ========================================================
-title:FALSE
+
+
+```{r, echo=FALSE}
+clusterVis_PCA(2)
+```
+
+***
+
+```{r, echo=FALSE}
+clusterVis(2)
+```
+
+Cluster 2 
+========================================================
+![aother](images/img10.png)
+
+***
+
+**GO Categories**
+
+- heme binding                   
+- oxygen binding                  
+- photosynthesis, light harvesting
+- apoptotic process    
+
+
+Self Organizing Maps - Large (6,6)
+========================================================
 
 ```{r, echo=FALSE}
 set.seed(6)

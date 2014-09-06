@@ -1,4 +1,4 @@
-#Analysis 9 - Getting a closer look at the clusters from the clusters from basic some WT only.  
+#Analysis 9 - Getting a closer look at the clusters from the clusters from basic some WT only - Small
 
 ##Purpose 
 
@@ -47,7 +47,7 @@ data.val <- cbind(mostDEgene.long, scale_data, pca.scores)
 
 
 
-##Self Organizing Map - (6,6), large
+##Self Organizing Map - (3,2) Small
 
 ```{r}
 #subset only the scaled gene expression values
@@ -59,7 +59,7 @@ head(som.data)
 
 
 set.seed(6)
-som <- som(data=som.data, somgrid(6,6,"hexagonal")) # This is where you change the size of the map
+som <- som(data=som.data, somgrid(3,2,"hexagonal")) # This is where you change the size of the map
 summary(som)
 ```
 
@@ -69,8 +69,6 @@ summary(som)
 plot(som, type = "codes")
 plot(som, type = "counts")
 plot(som, type="dist.neighbours")
-head(som$codes)
-som$data <- data.frame(som$data) #changed to dataframe to extract column names easier. 
 
 data.val2 <- cbind(data.val,som$unit.classif,som$distances) #bring 
 
@@ -78,34 +76,15 @@ data.val2 <- cbind(data.val,som$unit.classif,som$distances) #bring
 data.val2$gene <- gsub("^(.*)[.].*", "\\1", data.val2$gene)
 data.val2$gene <- gsub("^(.*)[.].*", "\\1", data.val2$gene)
 
-head(data.val2)
-```
-
-Upload the gene expression list.
-
-```{r}
-geneList1 <- read.csv("../../../06diffGeneExp/analysis/indvGenes/yasuCuratedGenes/pnas.1402835111.sd06.csv")
-
-#isolate the genes
-genesOfInterest <- geneList1[,c(1,3)]
-colnames(genesOfInterest) <- c("gene", "name")
-names(genesOfInterest) #check
-```
-
-```{r}
-#This is most stupid way around assigning if a gene is a curated gene! 
-#Figure out more elegent way.
-data.val2$curated <- match(data.val2$gene, genesOfInterest$gene)
-data.val2$curated <- gsub("[[:digit:]]+", "yes", data.val2$curated)
-data.val2$curated[is.na(data.val2$curated)] <- "no"
+names(data.val2)[20] <- "unit.classif"
 ```
 
 Visualize the major clusters. 
 ```{r}
-p <- ggplot(data.val2, aes(PC1, PC2, color = curated)) 
+data.val2$unit.classif <- as.factor(data.val2$unit.classif)
+p <- ggplot(data.val2, aes(PC1, PC2, color = unit.classif)) 
 
-curatedPlot <- p + geom_point(size=I(5), alpha = 0.6) +
-  scale_colour_manual(values=c("#cccccc", "#33ff33")) + 
+p + geom_point(size=I(3), alpha = 0.6) +
   theme_bw()
 ```
 
@@ -118,10 +97,10 @@ cate <- read.table("../../../07GO_enrichment/requisiteData/melted.GOTable.txt",h
 ```
 
 ###Cluster 1
-BO specific
+base rachis specific
 ```{r}
 clusterVis(1)
-clusterVis_line(1)
+clusterVis_PCA(1)
 clusterGO(1)
 y <- genesInClust(1, data.val2, annotation)
 
@@ -132,27 +111,25 @@ intersect(y$ITAG, genesOfInterest$genes)
 ###Cluster 2
 
 ```{r}
+plot(som, type = "codes")
+clusterVis_PCA(2)
 clusterVis(2)
-clusterVis_line(2)
-
 clusterGO(2)
 y <- genesInClust(2, data.val2, annotation)
-
+````
 ###Cluster 3 
 
-Ambr in WT is higher than in *tf2* and the WT genes in this cluster have a tight pattern.
-
 ```{r}
+clusterVis_PCA(3)
 clusterVis(3)
-clusterVis_line(3)
 clusterGO(3)
 ```
 
-###Cluster 4 - Photosynthetic Genes. 
+###Cluster 4
 
 ```{r}
+clusterVis_PCA(4)
 clusterVis(4)
-clusterVis_line(4)
 clusterGO(4)
 y <- genesInClust(4, data.val2, annotation)
 ```
@@ -162,118 +139,16 @@ Upregulation of BOther, whith many GO categories
 
 
 ```{r}
+clusterVis_PCA(5)
 clusterVis(5)
-clusterVis_line(5)
 clusterGO(5) 
 y <- genesInClust(5, data.val2, annotation)
 ```
 
 ###Cluster  6
 
-
-
 ```{r}
+clusterVis_PCA(6)
 clusterVis(6)
-clusterVis_line(6)
 clusterGO(6)
 ```
-
-###Cluster  7
-
-
-```{r}
-clusterVis(7)
-clusterVis_line(7)
-clusterGO(7)
-```
-
-
-###Cluster  8
-
-
-
-```{r}
-clusterVis(8)
-clusterVis_line(8)
-clusterGO(8)
-```
-
-###Cluster  9
-
-
-```{r}
-clusterVis(9)
-clusterVis_line(9)
-clusterGO(9)
-```
-
-###Cluster  10
-
-
-
-```{r}
-clusterVis(10)
-clusterVis_line(10)
-clusterGO(10)
-y <- genesInClust(10, data.val2, annotation)
-```
-
-###Cluster  11
-
-```{r}
-clusterVis(11)
-clusterVis_line(11)
-clusterGO(11)
-y <- genesInClust(11, data.val2, annotation)
-```
-
-```{r}
-clusterVis(12)
-clusterVis_line(12)
-clusterGO(12)
-y <- genesInClust(12, data.val2, annotation)
-```
-
-```{r}
-clusterVis(13)
-clusterVis_line(13)
-clusterGO(13)
-y <- genesInClust(13, data.val2, annotation)
-```
-
-
-```{r}
-clusterVis(14)
-clusterVis_line(14)
-clusterGO(14)
-y <- genesInClust(14, data.val2, annotation)
-```
-
-Conclusions
-
-
-I need to write something that looks at the statistical difference in tissue between each genotype.  In order to do that I have to subset based on tissue and do a t-test?  Do I need to correct for multiple testing? Ideally what information do I want from these clusters?
-
-1. I want clusters that are enriched in leaf genes. Maybe I could just color special for leaf genes?
-
-2. Significant differences between genotype at each tissue. 
-
-
-##How much intersect is there between my genes and the curated gene list?
-```{r}
-length(intersect(data.val2$gene, genesOfInterest$gene) ) #51
-```
-
-Only 51?  Is that right?  Double check.  Are there only 51 leaf curated genes differentially expressed?  Maybe I need to be looking at a larger subset.  25% co-efficient of variation. In `lcmSOM_analysis4_072914.Rmd`, I looked into this a bit more.  
-
-```{r, eval=FALSE}
-#From lcmSOM_analysis4_072914.Rmd
-intersect(genesOfInterest$gene, countData$X) #There are only 217 leaf curated genes in the normalized read counts. 
-intersect(genesOfInterest$gene, data.val.allGenes25$gene) # There are only 77 which are in the top 25%
-#There are 51 which overlap with the DE genes. 
-```
-
-I have to make a decision between 
-
-
-

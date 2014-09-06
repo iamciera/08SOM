@@ -45,13 +45,13 @@ pca.scores <- data.frame(pca$x)
 data.val <- cbind(genes25, scale_data, pca.scores) 
 ```
 
-##SOM A - large
+##SOM A 
 
 ```{r}
 #subset only the scaled gene expression values
 
 set.seed(6)
-som <- som(data=scale_data, somgrid(6,6,"hexagonal")) # This is where you change the size of the map
+som <- som(data=scale_data, somgrid(3,2,"hexagonal")) # This is where you change the size of the map
 summary(som)
 ```
 
@@ -61,6 +61,13 @@ data.val2 <- cbind(data.val,som$unit.classif,som$distances)
 names(data.val2)
 ##rename 
 names(data.val2)[20:21] <- c("unitClassIfA", "distanceA")
+
+###Output for DE promoter enrichment.
+data.valOutput <- data.val2
+names(data.valOutput)[20:21] <- c("cluster", "distanceA")
+names(data.valOutput)[1] <- "ITAG"
+
+write.csv(data.valOutput[,c(1, 20)], "../data/analysis10.small.csv")
 ```
 
 ###SOM B - Small
@@ -68,8 +75,8 @@ names(data.val2)[20:21] <- c("unitClassIfA", "distanceA")
 The only difference is the seed set.
 
 ```{r}
-set.seed(1)
-som <- som(data=scale_data, somgrid(3,2,"hexagonal")) # This is where you change the size of the map
+set.seed(4)
+som <- som(data=scale_data, somgrid(6,6,"hexagonal")) # This is where you change the size of the map
 summary(som)
 
 ###Connect with previous data
@@ -87,41 +94,16 @@ data.val4 <- data.val3[,c(1,8:13, 20:23)]
 head(data.val4)
 ```
 
--------------------------------------------
-Attempt 1: Create empty matric and run
+------------------------------------------
 
-```{r}
-###buildMatrix
-
-#You first need to build a matrix then loop over original values for population of matrix.
-#Maybe build function that sets the size of the matrix?
-
-# first subset unitClassIfA genes 1
-  #Loop through how many clusters B has
-  #Then sunset the unitClassIfB genes 1
-    # place in right area in matrix <- length(intersect(unitClassIfA$gene,unitClassIfB$gene)
-  #Then sunset the unitClassIfB genes 2
-    #place in right area in matrix <- length(intersect(unitClassIfA$gene,unitClassIfB$gene)
-      #repeat  
-
-iterations = 36
-variables = 6
-
-output <- matrix(ncol=variables, nrow=iterations)
-
-for (i in 1:iterations) {
-  subClusterA <- subset(data.val4, unitClassIfA == i)
-      #How the hell do I control this?
-  for (j in 1:variables) {
-      subClusterB <- subset(data.val4, unitClassIfB == j)
-       output[i,j] <- length(intersect(subClusterA$gene, subClusterB$gene))
-      }
-}
-```
 
 Attempt 2: Create empty vector
 
 ```{r}
+
+iterations = 6
+variables = 36
+
 mylist <- list() #create an empty list
 
 for (i in 1:iterations) {
@@ -136,12 +118,14 @@ mylist[[i]] <- vec #put all vectors in the list
 
 df <- do.call("rbind",mylist) #combine all vectors into a matrix
 
-## Did this work?
-###Test a few rows
-#subClusterA <- subset(data.val4, unitClassIfA == 36)
-#subClusterB <- subset(data.val4, unitClassIfB == 3)
-#length(intersect(subClusterA$gene, subClusterB$gene))
+df <- as.data.frame(df)
+head(df)
+```
 
-##Got my mutha fucking matrix, bitches!
+```{r}
+#colnames(df)[1:6]<- c("one","two","three","four","five","six")
+df$clustersA <- c("one","two","three","four","five","six")
 
----------
+df2 <- melt(df, variable_name = "clustersB")
+head(df2)
+write.csv(df2,"~/git.repos/d3-cluster/data/clustersTrial.csv")

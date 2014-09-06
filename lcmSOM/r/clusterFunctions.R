@@ -53,8 +53,7 @@ clusterVis <- function(clustNum){
 }
 
 clusterVis2 <- function(clustNum){
-  
-  sub_cluster <- subset(data.val2, som$unit.classif==17)
+  sub_cluster <- subset(data.val2, som$unit.classif==clustNum)
   sub_data <- sub_cluster[,c(1, 8:13)] # just the sample types
   m.data <- melt(sub_data) 
   m.data$region <- ifelse(grepl("wta", m.data$variable, ignore.case = T), "A.tip", 

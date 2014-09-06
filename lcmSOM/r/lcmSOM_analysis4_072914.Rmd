@@ -3,6 +3,7 @@
 In this analysis I am checking to see if using the top 25% of genes based on co-efficient of variation will give me similar results as Analysis 1, which was based on all genes from DE analysis between all tissues in WT. 
 
 ##1. Get the co-efficient of variation. 
+
 ```{r}
 countData <- read.csv("../data/normalized_read_count.csv")
 head(countData)
@@ -47,7 +48,7 @@ colnames(allGenes25)[1]<-"gene"
 ##2.pca
 
 ```{r}
-write.csv(allGenes25, "../data/analysis4.top25.csv")
+#write.csv(allGenes25, "../data/analysis4.top25.csv")
 scale_data <- as.matrix(t(scale(t(allGenes25[c(8:13)])))) 
 
 #Principle Component Analysis
@@ -73,7 +74,8 @@ p + geom_point()
 What is the difference between genes between allGeneList, which is from analysis one and only includes genes from the list of wt. 
 
 ```{r}
-mostDEgenesWT <- read.csv("../data/allGeneList.csv") #just WT
+##Wildtype only
+mostDEgenesWT <- read.csv("../data/allGeneList.csv") #WT
 head(mostDEgenesWT)
 
 mostDEgenesWT <- mostDEgenesWT[c(7, 1, 4)] #keep only needed columns (gene, type, mean)
@@ -81,16 +83,39 @@ mostDEgenesWT <- mostDEgenesWT[c(7, 1, 4)] #keep only needed columns (gene, type
 #Change from long to wide data format
 mostDEgenesWT.long <- cast(mostDEgenesWT, gene ~ type, value.var = mean, fun.aggregate = "mean") 
 
+##All
 
-#must cast from short to long version for comparisons. 
-head(mostDEgenesWT.long)
-head(allGenes)
-dim(mostDEgenesWT.long) #2249
-dim(allGenes25) #4618 #25% cv
+mostDEgenesAll <- read.csv("../data/allGeneListBothGenotypes_analysis5b.csv")
+
+mostDEgenesAll <- mostDEgenesAll[c(7, 2, 1, 4)] #keep only needed columns (gene, genotype, type, mean)
+
+head(mostDEgenesAll)
+
+#Change from long to wide data format
+mostDEgeneAll.long <- cast(mostDEgenesAll, genotype + gene ~ type, value.var = mean, fun.aggregate = "mean")  
+
+mostDEgene.long <- as.data.frame(mostDEgeneAll.long) #transformation. 
+
 
 ```
 
-There are more genes in the top 25%.
+##Comparing between all three lists.
+
+```{r}
+#must cast from short to long version for comparisons. 
+allGenes25 <- read.csv("../data/analysis4.top25.csv")
+
+head(mostDEgenesWT.long) #wt only
+head(mostDEgeneAll.long) #all
+head(allGenes25) #Top 25% co-efficient of variation
+
+
+dim(mostDEgenesWT.long) #2249
+length(unique(mostDEgeneAll.long$gene)) #3580
+length(unique(allGenes25$gene)) #4618 #25% cv
+```
+
+What is the intersect between wt and 25% co-efficient 
 ```{r}
 length(intersect(mostDEgenesWT.long$gene, allGenes25$gene)) #1500
 length(setdiff(mostDEgenesWT.long$gene, allGenes25$gene)) #749
@@ -101,14 +126,18 @@ There are 2,249 genes in WT only DE genes and 4,618 in the top 25% co-efficient 
 
 There are 1500 genes that are the same between 25% co-efficient of variation and the top genes in DE expression. There are 749 unique genes in DE expression list and 3118 in the top 25% co-efficient of variation.  
 
-How would this affect the SOMs?  It would cast a wider net when performing the SOMs.  But the difference between them is somewhat worrisome.  There should not be genes found in mostDEgenesWT that are not found in the top 25% from co-efficient of variation.  
+How would this affect the SOMs?  It would cast a wider net when performing the 
 
-Caveats:  
-This is not including the DE genes from tf2, which IS taken into account in the 25% co-efficient of variation.
+----------------
 
-##Comparing list of all genes
+What is the intersect between allGenes and 25% co-efficient 
+```{r}
+length(intersect(mostDEgeneAll.long$gene, allGenes25$gene)) #2359
+length(setdiff(mostDEgeneAll.long$gene, allGenes25$gene)) #1221 (the length of genes that are in mostDEgeneALL.long$gene that are not in allGenes25$gene)
+length(setdiff(allGenes25$gene,mostDEgeneAll.long$gene)) #2259
+```
 
-The best comparison would be all the genes in all list of DE, as I did in Analysis5, this list was found reading in all of the genes of all the 27 different DE expression analysis. 
+The two lists are similar.  allGenes25 is 1038 longer than the DE list. They share 2359 genes in both lists. DE list contains 1221 genes that top25 does not. And top25 has 2259 genes that top 25 does not have. 
 
 ```{r}
 #Read in total list and make long

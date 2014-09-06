@@ -2,7 +2,7 @@
 
 ##Purpose
 
-The purpose of this analysis is to make a superSOM.  
+The purpose of this analysis is to make a superSOM.  The begining part makes a list of all genes that are significanly expressed in all DE analysis regardless of genotype.  This part of the code takes a significant amount of time to run. 
 
 ```{r}
 library(ggplot2)
@@ -115,7 +115,6 @@ allGeneList  <- rbind(allGeneList, sumGraph) #bind together all the new rows per
 dim(allGeneList)
 head(allGeneList)
 
-#There is only wt here!
 allGeneList$genotype <- as.factor(allGeneList$genotype)
 levels(allGeneList$genotype)
 

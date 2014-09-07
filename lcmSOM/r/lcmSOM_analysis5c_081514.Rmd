@@ -10,162 +10,74 @@ library(reshape)
 library(plyr)
 library(kohonen)
 ```
+##PCA
+Upload that dataset:
 
-Read in files and format data from raw files
-=============================================
+```{r}
+genes25 <- read.csv("../data/analysis4.top25.csv")
+head(genes25)
+genes25 <- genes25[,c(2:14)]
+m.genes25 <- melt(genes25)
+head(m.genes25)
 
-Create a list of all DE analysis:
-
-###Count Data
-```{r, eval=FALSE}
-#Read in count data
-countData <- read.csv("../data/normalized_read_count.csv")
-#Melt count data
-countData <- melt(countData)
-colnames(countData) <- c("gene", "sample", "count")
+names(m.genes25) <- c("gene", "sample", "mean")
 
 #set genotype
 
-countData$genotype <- ifelse(grepl("wt", countData$sample, ignore.case = T), "wt", 
-         ifelse(grepl("tf2", countData$sample, ignore.case = T), "tf2", "unknown"))
+m.genes25$genotype <- ifelse(grepl("wt", m.genes25$sample, ignore.case = T), "wt", 
+         ifelse(grepl("tf2", m.genes25$sample, ignore.case = T), "tf2", "unknown"))
 
 #set tissue
 
-countData$tissue <- ifelse(grepl("other", countData$sample, ignore.case = T), "other", 
-         ifelse(grepl("mbr", countData$sample, ignore.case = T), "mbr", "unknown"))
+m.genes25$tissue <- ifelse(grepl("other", m.genes25$sample, ignore.case = T), "other", 
+         ifelse(grepl("mbr", m.genes25$sample, ignore.case = T), "mbr", "unknown"))
 
 #Set Region
-countData$region <- ifelse(grepl("a", countData$sample, ignore.case = T), "A", 
-         ifelse(grepl("c", countData$sample, ignore.case = T), "C", "B"))
+m.genes25$region <- ifelse(grepl("a", m.genes25$sample, ignore.case = T), "A", 
+         ifelse(grepl("c", m.genes25$sample, ignore.case = T), "C", "B"))
 
 #Set type
 
-countData$type <- paste(countData$region, countData$tissue,  sep = "")
-head(countData)
-```
-
-###Most Significantly DE genes
-```{r, eval = FALSE}
-
-#you need to reset working directory to allSigGenes for easier import of list of significant genes
-setwd("~/Dropbox/Research/LCMProject/08SOM/lcmSOM/data/allSigGenes/")
-
-#makes a list of all files in directory
-file_list <- list.files()
-
-#Creates one list from all the files in directory
-for (file in file_list){
-       
-  # if the merged dataset doesn't exist, create it
-  if (!exists("dataset")){
-    dataset <- read.table(file, header=TRUE, sep="\t")
-  }
-   
-  # if the merged dataset does exist, append to it
-  if (exists("dataset")){
-    temp_dataset <-read.table(file, header=TRUE, sep="\t")
-    dataset<-rbind(dataset, temp_dataset)
-    rm(temp_dataset)
-  }
- 
-}
-
-names(dataset)
-dim(dataset)
-
-allGenes<- dataset
-
-#recieve just the list
-allGenesITAG <- allGenes[,1]
-length(allGenesITAG)
-
-#Remove duplicates
-allGenesITAG <- unique(allGenesITAG)
-
-length(allGenesITAG)
-
-#make an empty table to hold all the genes
-allGeneList <- data.frame(t(rep(NA,7)))
-colnames(allGeneList) <- c("type", "genotype", "N", "mean", "sd", "se", "gene")
-allGeneList <- allGeneList[-1,] #remove first row
-head(allGeneList)
-```
-
-#Loop together all relevent gene information.
-
-```{r, eval = FALSE}
-for(GENE in allGenesITAG) {
- 
-  if(length(grep(GENE, countData$gene)) < 1){ #this is just making sure that the list of sig genes
-    next; 
-    }
-      
-  geneData <- subset(countData, grepl(GENE, countData$gene))
-   
-  sumGraph <- ddply(geneData, c("type", "genotype"), summarise,
-               N    = length(count),
-               mean = mean(count),
-               sd   = sd(count),
-               se   = sd / sqrt(N))
-  
-  sumGraph$gene <- GENE
-  
-allGeneList  <- rbind(allGeneList, sumGraph) #bind together all the new rows per loop. 
-}
-dim(allGeneList)
-head(allGeneList)
-
-#There is only wt here!
-allGeneList$genotype <- as.factor(allGeneList$genotype)
-levels(allGeneList$genotype)
-
-#at this point set working directory back to source
-
-write.table(allGeneList, file = "../data/allGeneListBothGenotypes_analysis5b.csv", sep = ",")
-```
-
-##1.pca.R
-
-
-```{r}
-
-mostDEgenes <- read.csv("../data/allGeneListBothGenotypes_analysis5b.csv")
-
-mostDEgenes <- mostDEgenes[c(7, 2, 1, 4)] #keep only needed columns (gene, genotype, type, mean)
-
-head(mostDEgenes)
+m.genes25$type <- paste(m.genes25$region, m.genes25$tissue,  sep = "")
+head(m.genes25)
+m.genes25.sub <- m.genes25[,c(1,7,4,3)]
+head(m.genes25.sub)
 
 #Change from long to wide data format
-mostDEgene.long <- cast(mostDEgenes, genotype + gene ~ type, value.var = mean, fun.aggregate = "mean")  #why did I have to specify "mean" here? Are there duplicates of types? Double check later. 
-
+m.genes25.long <- cast(m.genes25.sub, genotype + gene ~ type, value.var = mean, fun.aggregate = "mean")  
+m.genes25.long <- as.data.frame(m.genes25.long)  
 head(mostDEgene.long)
+```
 
-mostDEgene.long <- as.data.frame(mostDEgene.long) 
-names(mostDEgene.long)
+```{r}
+wt <- subset(m.genes25.long, genotype == "wt")
+tf2 <- subset(m.genes25.long, genotype == "tf2")
 
-scale_data <- as.matrix(t(scale(t(mostDEgene.long[c(3:8)]))))
-head(scale_data) 
-#Principle Component Analysis
-pca <- prcomp(scale_data, scale=TRUE) 
+scale_data.wt <- as.matrix(t(scale(t(wt[c(3:8)]))))#transformation.
+scale_data.tf2 <- as.matrix(t(scale(t(tf2[c(3:8)]))))#transformation.
+
+scale_data <- rbind(scale_data.wt, scale_data.tf2)
+head(scale_data)
+
+colSums(is.na(scale_data)) #there are six NAs in each column, double check where they came from. 
+
+pca <- prcomp(na.omit(scale_data), scale=TRUE)  
 
 summary(pca) 
 
 pca.scores <- data.frame(pca$x)
 
-data.val <- cbind(mostDEgene.long, scale_data, pca.scores) 
-
-head(data.val)
+data.val <- cbind(m.genes25.sub, scale_data, pca.scores) 
 ```
 
 
 ##Visualizing the PCA
 
-Looks to be three major clusters. 
-
 ```{r}
 p <- ggplot(data.val, aes(PC1, PC2)) 
-p + geom_point()
+p + geom_point(alpha = 0.5)
 ```
+
 
 
 ##SuperSOM

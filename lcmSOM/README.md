@@ -41,6 +41,8 @@ I continued by looking at the difference between all the clusters. Which showed 
 ##SuperSOMs
 `lcmSOM_analysis5_073114.Rmd` - This file is where I made the full list of the most signicant genes from *ALL* DE analysis regardless of genotype, `/data/allGeneListBothGenotypes_analysis5b.csv`. The start is making a list from all the DE analysis. Then this is SuperSOM attempt one, based off Dan Chitwood's script. 
 
+`lcmSOM_analysis5b_081514`: This is how the `data/allGeneListBothGenotypes_analysis5b.csv` file was made.  Which contains all the signigicanly expressed genes from ALL DE analyses.  
+
 `lcmSOM_analysis5c_073114.Rmd` - Scaled seperatley by genotype. There is not much difference in the SuperSOM categories if you scale them seperatley and it is most likely the best way to do it, so this is the **Best small  SuperSOM**.
 
 `analysis5d_081814.Rmd` - After viewing the `clusterVis_line()` clusters in `lcmSOM_analysis8_081514.Rmd`, I saw that there were a lot of noise that was associated in these main clusters.  I think if I make more clusters I can begin to see tighter gene expression clusters. **Best large SuperSOM**  
@@ -53,7 +55,7 @@ I continued by looking at the difference between all the clusters. Which showed 
 
 `lcmSOM_analysis9_081814.Rmd` - A closer look at the small wt cluster SOM from `lcmSOM_analysis1.0a_071014.Rmd` Just to see if I can get some understanding of gene clusters. 
 
-`lcmSOM_analysis9.5_081814.Rmd` - 
+`lcmSOM_analysis9.5_081814.Rmd` - A closer look at the LARGE wt cluster SOM from `lcmSOM_analysis1.0a_071014.Rmd`.  This is the data set that most of the `clusterFunctions.R` were built for, therefore this analsyis NEEDs  to source `clusterFunctions` to be run. 
 
 `lcmSOM_analysis10_082514` - Comparing the clusters.  This is creating SOMs that can be anazlysed further for chord plots. In this particular expample we are comparing seed size between the small (3,2) SOMs with top 25% co variance data.  **Best wildtype only SOMs**
 

@@ -31,6 +31,8 @@ Read in data produced from analysis1D.
 ```{r}
 plot.data <- read.table("../data/analysis1.som.data.small.ALLD.txt",header=TRUE)
 names(plot.data)
+
+levels(plot.data$genotype) #double check that I am reading the correct data set.
 ```
 
 
@@ -47,8 +49,36 @@ clusterVis <- function(clustNum){
   sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
   sub_data <- sub_cluster[,9:14] # just the sample types
   m.data <- melt(sub_data) 
+  
   p <- ggplot(m.data, aes(x=variable, y=value))
   p + geom_point(alpha=0.5, position="jitter", size=1) + geom_boxplot(alpha=0.75, outlier.size=0) 
+}
+```
+
+#clusterVis_geno Function
+#displays transformed data in a box plot and genotype information 
+```{r}
+clusterVis_geno <- function(clustNum){
+  
+  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
+  head(sub_cluster)
+  sub_data <- sub_cluster[,c(1,9:14)] # just the sample types
+  names(sub_data)
+  m.data <- melt(sub_data) 
+  
+  m.data$genotype <- as.factor(m.data$genotype)
+  
+ # m.data$region <- ifelse(grepl("A", m.data$variable, ignore.case = T), "A.tip", 
+                        # ifelse(grepl("B", m.data$variable, ignore.case = T), "B.middle", "C.base"))
+ # m.data$tissue <- ifelse(grepl("other", m.data$variable, ignore.case = T), "rachis", 
+                          #ifelse(grepl("mbr", m.data$variable, ignore.case = T), "margin", "base"))
+  
+  p <- ggplot(m.data, aes(x=variable, y=value, color = genotype))
+  p + geom_point(alpha=0.5, position="jitter", size=1) + 
+    geom_boxplot(alpha=0.75, outlier.size=0) + 
+    theme_bw() + 
+    scale_colour_manual(values=c("#ef8a62", "#67a9cf")) 
+
 }
 ```
 
@@ -180,25 +210,102 @@ sigType <- c("intersect", "wt", "tf2")
 }
 ```
 
-vennDiagram Function:  
+```{r}
+#Prereq annotation files for function
 
+annotation1<- read.delim("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_ITAG_annotations.tsv", header=FALSE)  #Changed to the SGN human readable annotation
+colnames(annotation1) <- c("ITAG", "SGN_annotation")
+annotation2<- read.delim ("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_annotated.tsv")
+annotation <- merge(annotation1,annotation2, by = "ITAG")
+#Only Gene Name and ITAG
+annotation <- annotation[,c(1,3,5)]
+#fix to one regex
+annotation$ITAG <- gsub("^(.*)[.].*", "\\1", annotation$ITAG)
+annotation$ITAG <- gsub("^(.*)[.].*", "\\1", annotation$ITAG)
+
+###genesInClust()
+
+#This looks at how many unique genes are in each cluster. 
+
+genesInClust_tf2 <- function(clustNum) {
+  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
+  
+  #Get rid of the end numbers
+  sub_cluster$gene <- gsub("^(.*)[.].*", "\\1", sub_cluster$gene)
+  sub_cluster$gene <- gsub("^(.*)[.].*", "\\1", sub_cluster$gene)
+  
+  sctf2 <- subset(sub_cluster, genotype == "tf2")
+  sub_data <- as.data.frame(sctf2[,2])
+  colnames(sub_data) <- "ITAG"
+  
+  resultsTable <- merge(sub_data,annotation,by = "ITAG", all.x=TRUE)
+  print(nrow(unique(resultsTable)))
+  return(unique(resultsTable))
+  }
+
+genesInClust_wt <- function(clustNum) {
+  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
+  
+  #Get rid of the end numbers
+  sub_cluster$gene <- gsub("^(.*)[.].*", "\\1", sub_cluster$gene)
+  sub_cluster$gene <- gsub("^(.*)[.].*", "\\1", sub_cluster$gene)
+  
+  scwt <- subset(sub_cluster, genotype == "wt")
+  sub_data <- as.data.frame(scwt[,2])
+  colnames(sub_data) <- "ITAG"
+  
+  resultsTable <- merge(sub_data,annotation,by = "ITAG", all.x=TRUE)
+  print(nrow(unique(resultsTable)))
+  return(unique(resultsTable))
+  }
+
+genesInClust_intersect <- function(clustNum) {
+  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
+  
+  #Get rid of the end numbers
+  sub_cluster$gene <- gsub("^(.*)[.].*", "\\1", sub_cluster$gene)
+  sub_cluster$gene <- gsub("^(.*)[.].*", "\\1", sub_cluster$gene)
+  
+  sctf2 <- subset(sub_cluster, genotype == "tf2")
+  scwt <- subset(sub_cluster, genotype == "wt")
+  scIntersect <- as.data.frame(intersect(scwt$gene, sctf2$gene))
+  dim(scIntersect)
+  sub_data <- as.data.frame(scIntersect[,1])
+  colnames(sub_data) <- "ITAG"
+  resultsTable <- merge(sub_data,annotation,by = "ITAG", all.x=TRUE)
+  print(nrow(unique(resultsTable)))
+  return(unique(resultsTable))
+  }
+```
 
 ###Cluster 1
 
-Sub cluster 1 is defined by up regulation of genes in Bmbr, which is the early leaflet region of the terminal leaflet. 
+Sub cluster 1 is defined by up regulation of genes in Bmbr, which is the early leaflet region of the terminal leaflet. Very Simialar to GO terms found from DE expression analsysis. 
 
 ```{r}
 clusterVis(1)
+clusterVis_geno(1)
+
+#Choose which one you are interested in and uncomment 
+#print to screen in a readible manner with kable()
+
+#y <- genesInClust_tf2(1)
+#y <- genesInClust_wt(1)
+#y <- genesInClust_intersect(1)
+
+kable(y, format = "latex", booktabs = TRUE)
+
 clusterNum(1)
 clusterGO(1)
 ```
 
 ###Cluster 2
 
-Sub cluster 2 is defined by up regulation of genes in Cmbr, which is the base "marginal blastozone" region, which should be the most pluripotent in WT. 
+Sub cluster 2 is defined by up regulation of genes in Cmbr, which is the base "marginal blastozone" region, which should be the most pluripotent in WT. Same as DE (wtcmbr vs wtco) except with less categories. 
 
 ```{r}
 clusterVis(2)
+clusterVis_geno(2)
 clusterNum(2)
 clusterGO(2)
 ```
@@ -209,6 +316,7 @@ This cluster is specific to Cother, which is specific to the rachis region at th
 
 ```{r}
 clusterVis(3)
+clusterVis_geno(3)
 clusterNum(3)
 clusterGO(3)
 ```

@@ -83,12 +83,12 @@ clusterVis_geno <- function(clustNum){
   m.data$genotype <- as.factor(m.data$genotype)
   
   #m.data$region <- ifelse(grepl("A", m.data$variable, ignore.case = T), "A.tip", 
-  ifelse(grepl("B", m.data$variable, ignore.case = T), "B.middle", "C.base"))
-#m.data$tissue <- ifelse(grepl("other", m.data$variable, ignore.case = T), "rachis", 
-ifelse(grepl("mbr", m.data$variable, ignore.case = T), "margin", "base"))
+  #ifelse(grepl("B", m.data$variable, ignore.case = T), "B.middle", "C.base"))
+  #m.data$tissue <- ifelse(grepl("other", m.data$variable, ignore.case = T), "rachis", 
+  #ifelse(grepl("mbr", m.data$variable, ignore.case = T), "margin", "base"))
 
-p <- ggplot(m.data, aes(x=variable, y=value, color = genotype))
-p + geom_point(alpha=0.5, position="jitter", size=1) + 
+  p <- ggplot(m.data, aes(x=variable, y=value, color = genotype))
+  p + geom_point(alpha=0.5, position="jitter", size=1) + 
   geom_boxplot(alpha=0.75, outlier.size=0) + 
   theme_bw() + 
   scale_colour_manual(values=c("#ef8a62", "#67a9cf")) 

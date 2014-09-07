@@ -45,29 +45,41 @@ head(m.genes25.sub)
 
 #Change from long to wide data format
 m.genes25.long <- cast(m.genes25.sub, genotype + gene ~ type, value.var = mean, fun.aggregate = "mean")  
-m.genes25.long <- as.data.frame(m.genes25.long)  
-head(mostDEgene.long)
+m.genes25.long <- as.data.frame(m.genes25.long) 
+
+m.genes25.long <- m.genes25.long[-c(870,1173,1437,1565,2247,4523),] #removing rows that caused NAs, see below for testing that was done.
+
 ```
 
 ```{r}
 wt <- subset(m.genes25.long, genotype == "wt")
+
 tf2 <- subset(m.genes25.long, genotype == "tf2")
+
 
 scale_data.wt <- as.matrix(t(scale(t(wt[c(3:8)]))))#transformation.
 scale_data.tf2 <- as.matrix(t(scale(t(tf2[c(3:8)]))))#transformation.
 
 scale_data <- rbind(scale_data.wt, scale_data.tf2)
-head(scale_data)
+```
 
-colSums(is.na(scale_data)) #there are six NAs in each column, double check where they came from. 
+Testing a problem with NAs I ran into that caused me to remove these before analysis, I rean with out removing them and ran into some problems when binding everything back together. 
+```{r}
+#scale_data <- as.dataframe(scale_data)
+#colSums(is.na(scale_data)) #there are six NAs in each column, double check where they came from. 
 
-pca <- prcomp(na.omit(scale_data), scale=TRUE)  
+#new_DF_na2 <- subset(scale_data, is.na(scale_data$Cmbr))
+#new_DF_na1 <- m.genes25.long[c(870,1173,1437,1565,2247,4523),] #they came from these rows, must remove them in the begining. 
+```
+
+Continuing on with PCA
+```{r}
 
 summary(pca) 
 
 pca.scores <- data.frame(pca$x)
 
-data.val <- cbind(m.genes25.sub, scale_data, pca.scores) 
+data.val <- cbind(m.genes25.long, scale_data, pca.scores) 
 ```
 
 
@@ -77,7 +89,6 @@ data.val <- cbind(m.genes25.sub, scale_data, pca.scores)
 p <- ggplot(data.val, aes(PC1, PC2)) 
 p + geom_point(alpha = 0.5)
 ```
-
 
 
 ##SuperSOM

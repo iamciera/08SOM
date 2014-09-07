@@ -55,18 +55,44 @@ clusterVis <- function(clustNum){
 clusterVis2 <- function(clustNum){
   sub_cluster <- subset(data.val2, som$unit.classif==clustNum)
   sub_data <- sub_cluster[,c(1, 8:13)] # just the sample types
-  m.data <- melt(sub_data) 
+  
   m.data$region <- ifelse(grepl("wta", m.data$variable, ignore.case = T), "A.tip", 
-                         ifelse(grepl("wtc", m.data$variable, ignore.case = T), "B.middle", "C.base"))
+                          ifelse(grepl("wtb", m.data$variable, ignore.case = T), "B.middle", "C.base"))
   m.data$tissue <- ifelse(grepl("other", m.data$variable, ignore.case = T), "rachis", 
-                          ifelse(grepl("mbr", m.data$variable, ignore.case = T), "margin", "base"))
+                          ifelse(grepl("mbr", m.data$variable, ignore.case = T), "margin", "NA"))
+  m.data <- melt(sub_data) 
+  head(m.data)
+ 
   p <- ggplot(m.data, aes(x=tissue, y=value))
   p + geom_point(alpha=0.5,position="jitter", size=1) + 
     geom_boxplot(alpha=0.70, outlier.size=0) + 
-    theme_bw() + facet_grid(region ~ .)
+    theme_bw() + facet_grid(region ~ .) 
 }
 
+#clusterVis_geno Function
+#displays transformed data in a box plot and genotype information 
 
+clusterVis_geno <- function(clustNum){
+  
+  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
+  head(sub_cluster)
+  sub_data <- sub_cluster[,c(1,9:14)] # just the sample types
+  names(sub_data)
+  m.data <- melt(sub_data) 
+  
+  m.data$genotype <- as.factor(m.data$genotype)
+  
+  #m.data$region <- ifelse(grepl("A", m.data$variable, ignore.case = T), "A.tip", 
+  ifelse(grepl("B", m.data$variable, ignore.case = T), "B.middle", "C.base"))
+#m.data$tissue <- ifelse(grepl("other", m.data$variable, ignore.case = T), "rachis", 
+ifelse(grepl("mbr", m.data$variable, ignore.case = T), "margin", "base"))
+
+p <- ggplot(m.data, aes(x=variable, y=value, color = genotype))
+p + geom_point(alpha=0.5, position="jitter", size=1) + 
+  geom_boxplot(alpha=0.75, outlier.size=0) + 
+  theme_bw() + 
+  scale_colour_manual(values=c("#ef8a62", "#67a9cf")) 
+}
 
 ###clusterGO()
 
@@ -144,7 +170,7 @@ clusterVis_PCA <- function(clustNum) {
       size = 16, 
       face = "bold"))
 }
-
+Ø
 
 ###clusterVis_line
 
@@ -183,7 +209,6 @@ genesInClust <- function(clustNum, data.val2, annotation) {
   sub_data <- as.data.frame(sub_cluster[,1])
   colnames(sub_data) <- "ITAG"
   resultsTable <- merge(sub_data,annotation,by = "ITAG", all.x=TRUE)
-  head(resultsTable)
   print(nrow(unique(resultsTable)))
   return(unique(resultsTable))
   }

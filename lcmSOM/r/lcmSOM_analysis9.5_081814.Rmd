@@ -360,12 +360,14 @@ Solyc05g015730 & AT5G10140 & MADS-box protein encoded by FLOWERING LOCUS C - tra
 Solyc04g007000 & AT1G13260 & Encodes an AP2/B3 domain transcription factor which is upregulated in response to low temperature. It contains a B3 DNA binding domain. It has circadian regulation and may function as a negative growth regulator.\\
 
 Solyc01g058030 & AT1G47990 & Encodes a gibberellin 2-oxidase. AtGA2OX4 expression is responsive to cytokinin and KNOX activities.\\
+
 Solyc01g058040 & AT1G02400 & Encodes a gibberellin 2-oxidase.\\
 
 Solyc01g010970 & AT1G69440 & Encodes ARGONAUTE7, a member of the ARGONAUTE family, characterised by the presence of PAZ and PIWI domains. Involved in the regulation of developmental timing. Required for the accumulation of TAS3 ta-siRNAs but not for accumulation of miR171, miR173, miR390 or mi391.   Localized in mature rosette leaves and floral buds.\\
 
 ```{r}
 clusterVis(17)
+clusterVis2(17)
 clusterVis_PCA(17)
 clusterVis_line(17)
 #clusterGO(17)
@@ -624,6 +626,7 @@ Cluster 35
 Higher is o regions than MBR
 ```{r}
 clusterVis(35)
+clusterVis2(35)
 clusterVis_PCA(35)
 clusterVis_line(35)
 #clusterGO(35)

@@ -192,13 +192,111 @@ Cluster 2
 - photosynthesis, light harvesting
 - apoptotic process    
 
+Questions of Co-expression
+========================================================
+
+What are the specifc genes that contribute to marginal idenity? 
+
+
+
 
 Self Organizing Maps - Large (6,6)
 ========================================================
 
 ```{r, echo=FALSE}
+#based off analysis from 
 set.seed(6)
 som <- som(data=scale_data, somgrid(6,6,"hexagonal")) # This is where you change the size of the map
 plot(som, type = "codes")
 ```
+
+Cluster Specific Analsysis Example 
+========================================================
+left: 30%
+
+![map](images/img8.png)
+
+***
+
+```{r,echo=FALSE}
+clusterVis2(17)
+```
+
+Cluster 17: Up-regulated in rachis compared to margin tissue within each region 
+
+Cluster 17: Growth Genes
+========================================================
+left: 80%
+
+<small>Auxin Response 6 - auxin response via expression of auxin regulated genes
+
+gibberellin 2-oxidase - responsive to cytokinin and KNOX activities
+
+ARGONAUTE7 - required for mediolateral expansion in maize (Douglas et al, 2010)
+
+REDUCED STEM BRANCHING 6 - MADS-box transcription factor, mutant flower margins expanded (TAIR mutant lines)
+
+AP2/B3 domain transcription factor - may function as a negative growth regulator
+
+R2R3-MYB TF factor gene -  MYB gene involved in cell fate idenity & Lateral Meristem Initiation (Muller et al., 2005)
+
+EMBRYO DEFECTIVE - mutant with enlarged SAM (Cushing et al. 2005)</small>
+
+Cluster 35
+========================================================
+left: 30%
+
+![map](images/img8.png)
+
+***
+
+```{r,echo=FALSE}
+clusterVis2(35)
+```
+
+Cluster 35 - Photosynthesis and Vascular Differentiation
+========================================================
+<small>**Solyc00g277510** - Encodes chlorophyll binding protein D1, a part of the photosystem II reaction center core
+
+**Solyc02g071000** - Subunit of light-harvesting complex II (LHCII),which absorbs light and transfers energy to the photosynthetic reaction center.
+
+**Solyc05g013570** - phototropic-responsive NPH3 family protein
+
+**Solyc05g041230** - chloroplast gene encoding a CP43 subunit of  the photosystem II reaction center.
+
+**Solyc08g066500** - Member of the class III HD-ZIP protein family. Critical for vascular development.
+
+**Solyc08g067330** - Encodes lhcb1.1 a component of the LHCIIb light harvesting complex associated with photosystem II.</small>
+
+Further investigation using mutant with accelerated cellular differentiation
+========================================================
+
+![trifoliate](images/img11.png)
+
+
+========================================================
+left: 70%
+
+![trifoliate](images/img12.png)
+
+***
+
+</br></br>
+Mutant is unable to maintain proper auxin foci due to low PIN1 
+expression levels
+
+
+========================================================
+left: 70%
+
+<center>![trifoliate](images/img12.png)</center>
+
+***
+
+</br></br>
+Mutant is unable to maintain proper auxin foci due to low PIN1 
+expression levels
+
+Self Organized Maps Vs. Super Self Organized Maps
+========================================================
 

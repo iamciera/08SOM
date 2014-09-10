@@ -74,6 +74,7 @@ Testing a problem with NAs I ran into that caused me to remove these before anal
 
 Continuing on with PCA
 ```{r}
+pca <- prcomp(scale_data, scale=TRUE) 
 
 summary(pca) 
 
@@ -94,19 +95,35 @@ p + geom_point(alpha = 0.5)
 ##SuperSOM
 
 ```{r}
+new_DF_na1
+
 set.seed(6)
 names(data.val)
 
 superSomData <- data.val[,c(1:8)]
 
-tf2 <- subset(superSomData, genotype == "tf2", select = 3:8)
-wt <- subset(superSomData, genotype == "wt", select = 3:8)
+tf2 <- subset(superSomData, genotype == "tf2", select = 1:8)
+wt <- subset(superSomData, genotype == "wt", select = 1:8)
+
+wtdiff <- setdiff(wt$gene, tf2$gene) #find which genes differ
+
+#remove them in WT
+
+for (GENE in wtdiff) {
+  wt <- wt[-grep(GENE, wt$gene),]
+}
+
+tf2 <- tf2[,3:8]
+wt <- wt[,3:8]
 
 wt <- as.matrix(wt)
 tf2 <- as.matrix(tf2)
 
 sc.wt <- t(scale(t(wt)))
 sc.tf2 <- t(scale(t(tf2)))
+
+dim(sc.tf2)
+dim(sc.wt)
 
 all.data <- list(sc.wt,sc.tf2)
 

@@ -7,7 +7,6 @@ The goal of this is to provide a Self Organizing Map (SOM) of the LCM data to un
 
 `normalized_read_count.csv` came from edgeR analysis. **need to add explicit details of analysis.
 
-
 ##Analysis
 
 Each analysis that was performed. 
@@ -41,9 +40,11 @@ I continued by looking at the difference between all the clusters. Which showed 
 ##SuperSOMs
 `lcmSOM_analysis5_073114.Rmd` - This file is where I made the full list of the most signicant genes from *ALL* DE analysis regardless of genotype, `/data/allGeneListBothGenotypes_analysis5b.csv`. The start is making a list from all the DE analysis. Then this is SuperSOM attempt one, based off Dan Chitwood's script. 
 
-`lcmSOM_analysis5b_081514`: This is how the `data/allGeneListBothGenotypes_analysis5b.csv` file was made.  Which contains all the signigicanly expressed genes from ALL DE analyses.  
+`lcmSOM_analysis5b_081514`: This is how the `data/allGeneListBothGenotypes_analysis5b.csv` file was made.  Which contains all the signigicanly expressed genes from ALL DE analyses.  This is the basic SOM with both genotypes. *It shoud be noted that this was done with the top DE genes, not the top 25% co-efficient of variation genes.*
 
-`lcmSOM_analysis5c_073114.Rmd` - Scaled seperatley by genotype. There is not much difference in the SuperSOM categories if you scale them seperatley and it is most likely the best way to do it, so this is the **Best small  SuperSOM**.
+`lcmSOM_analysis5c_073114.Rmd` - Scaled seperatley by genotype. There is not much difference in the SuperSOM categories if you scale them seperatley and it is most likely the best way to do it, so this is the **Best small  SuperSOM**. 
+
+After viewing this, I saw that I didn't use the co-efficient of variation and I tried to get it working, but there was some problems with the NA, I never re-did it, but will have to do in the future.  This along with analysis 
 
 `analysis5d_081814.Rmd` - After viewing the `clusterVis_line()` clusters in `lcmSOM_analysis8_081514.Rmd`, I saw that there were a lot of noise that was associated in these main clusters.  I think if I make more clusters I can begin to see tighter gene expression clusters. **Best large SuperSOM**  
 

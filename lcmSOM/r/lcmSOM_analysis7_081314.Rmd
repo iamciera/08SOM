@@ -22,11 +22,6 @@ library(GO.db)
 ###Visualize by Cluster
 Read in data used for GO enrichment analysis
 
-```{r}
-geneLength <- read.csv("../../../07GO_enrichment/requisiteData/normalized_genes_length.csv")
-cate <- read.table("../../../07GO_enrichment/requisiteData/melted.GOTable.txt",header=TRUE)
-```
-
 Read in data produced from analysis1D.
 ```{r}
 plot.data <- read.table("../data/analysis1.som.data.small.ALLD.txt",header=TRUE)
@@ -61,9 +56,8 @@ clusterVis <- function(clustNum){
 clusterVis_geno <- function(clustNum){
   
   sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
-  head(sub_cluster)
   sub_data <- sub_cluster[,c(1,9:14)] # just the sample types
-  names(sub_data)
+  
   m.data <- melt(sub_data) 
   
   m.data$genotype <- as.factor(m.data$genotype)
@@ -213,6 +207,10 @@ sigType <- c("intersect", "wt", "tf2")
 ```{r}
 #Prereq annotation files for function
 
+
+geneLength <- read.csv("../../../07GO_enrichment/requisiteData/normalized_genes_length.csv")
+cate <- read.table("../../../07GO_enrichment/requisiteData/melted.GOTable.txt",header=TRUE)
+
 annotation1<- read.delim("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_ITAG_annotations.tsv", header=FALSE)  #Changed to the SGN human readable annotation
 colnames(annotation1) <- c("ITAG", "SGN_annotation")
 annotation2<- read.delim ("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_annotated.tsv")
@@ -278,6 +276,8 @@ genesInClust_intersect <- function(clustNum) {
   }
 ```
 
+
+
 ###Cluster 1
 
 Sub cluster 1 is defined by up regulation of genes in Bmbr, which is the early leaflet region of the terminal leaflet. Very Simialar to GO terms found from DE expression analsysis. 
@@ -303,9 +303,50 @@ clusterGO(1)
 
 Sub cluster 2 is defined by up regulation of genes in Cmbr, which is the base "marginal blastozone" region, which should be the most pluripotent in WT. Same as DE (wtcmbr vs wtco) except with less categories. 
 
+
+##Wildtype specific
+Solyc09g083280 & AT5G43700 & Auxin inducible protein similar to transcription factors.\\
+
+Solyc08g016070 & AT4G16340 & mutant has Seedling lethal; Cotyledon, leaf-shape, trichome defects; Putative Cytoskeletal Protein\\
+
+Solyc07g062840 & AT5G53950 & Transcriptional activator of the NAC gene family, with CUC1 redundantly required for embryonic apical meristem formation, cotyledon separation and expression of STM.  Proper timing of CUC2 expression is required to maintain the phyllotactic pattern initiated in the meristem.
+
+Solyc12g077670 & AT1G18800 & Double nrp1-1 nrp2-1 mutants show arrest of cell cycle progression at G2/M  and disordered cellular organization occurred in root tips. Localize in the nucleus and can form homomeric and heteromeric protein complexes with NRP1. Bind histones Histone2A and Histone2B and associate with chromatin in vivo.\\
+
+##tf2 specific
+
+Solyc12g006340 & AT1G30330 & Encodes a member of the auxin response factor family. Mediates auxin response via expression of auxin regulated genes. Acts redundantly with ARF8 to control stamen elongation and flower maturation. Expression of ARF6 is controlled by miR167.\\
+
+Solyc11g013150 & AT4G08250 & scarecrow transcription factor family protein; similar to SCR (SCARECROW), transcription factor [Arabidopsis thaliana] (TAIR:AT3G54220.1); similar to Nodulation signaling pathway 2 protein (GB:Q5NE24); contains InterPro domain GRAS transcription factor; (InterPro:IPR005202)\\
+
+Solyc08g079100 & AT4G00180 & YABBY gene family member, likely has transcription factor activity, involved in specifying abaxial cell fate. Along with FIL, involved in patterning of the fruit. GUS reporter gene expression in seedlings is observed in the young leaves and as the leaf matures, expression is restricted to the abaxial tissues of leaves, expression is also observed on either side of the leaf margin in the younger tissues of leaf blades.\\
+
+Solyc07g045550 & AT5G35770 & A recessive mutation in the Arabidopsis STERILE APETALA (SAP) causes severe aberrations in inflorescence  and flower and ovule development.\\
+
+Solyc01g100510 & AT1G23380 & homeodomain transcription factor KNAT6, belonging to class I of KN transcription factor family (which also includes KNAT1 and KNAT2). Expression is increased in as and bop1 leaf mutants.\\
+
+
+
+
 ```{r}
 clusterVis(2)
 clusterVis_geno(2)
+
+w <- genesInClust_tf2(2)
+x <- genesInClust_wt(2)
+y <- genesInClust_intersect(2)
+
+z <- setdiff(w$ITAG,y$ITAG)
+z <- as.data.frame(z)
+
+names(z)[1]<- "ITAG"
+head(z)
+resultsTable <- merge(z,annotation,by = "ITAG", all.x=TRUE)
+
+kable(resultsTable, format = "latex", booktabs = TRUE)
+dim(resultsTable)
+kable(x, format = "latex", booktabs = TRUE)
+
 clusterNum(2)
 clusterGO(2)
 ```
@@ -326,6 +367,7 @@ clusterGO(3)
 This cluster has genes that are preferentially up-regulated in Ambr, which is the tip most region that becomes the terminal leaflet.  This is the terminal leaflet blade region 
 ```{r}
 clusterVis(4)
+clusterVis_geno(4)
 clusterNum(4)
 clusterGO(4)
 ```
@@ -336,6 +378,14 @@ The cluster ihas genes that are preferentially up-regulated in Aother, which is 
 
 ```{r}
 clusterVis(5)
+clusterVis_geno(5)
+
+y <- genesInClust_tf2(5)
+y <- genesInClust_wt(5)
+y <- genesInClust_intersect(5)
+
+kable(y, format = "latex", booktabs = TRUE)
+
 clusterNum(5)
 clusterGO(5)
 ```

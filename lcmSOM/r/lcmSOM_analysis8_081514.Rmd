@@ -17,6 +17,7 @@ library(reshape)
 library(kohonen)
 library(goseq)
 library(GO.db)
+library(knitr)
 ```
 
 ###Visualize by Cluster
@@ -53,8 +54,6 @@ clusterVis <- function(clustNum){
     theme_bw()
 }
 ```
-
-
 
 ```{r}
 
@@ -154,24 +153,93 @@ genesInClust <- function(clustNum, plot.data, annotation) {
   return(unique(resultsTable))
   }
 
+clusterVis_PCA <- function(clustNum) {
+  
+  
+  #make dataset for visualization
+  data.val3 <- plot.data
+  names(data.val3)
+  data.val3$cluster[data.val3[,21] == clustNum] <- "subcluster"
+  data.val3$cluster[data.val3[,21] != clustNum] <- "other"
+  
+  #plot
 
+  p <- ggplot(data.val3, aes(PC1, PC2, color = cluster)) 
+  p + geom_point(size=I(2), alpha = 0.6) +
+    scale_colour_manual(values=c("#cccccc", "#000000")) + 
+    theme_bw() + 
+    theme(legend.text = element_text(
+      size = 16, 
+      face = "bold")) + 
+    facet_grid(. ~ genotype)
+}
+
+clusterVis_PCAsub <- function(clustNum) {
+  
+  
+  #make dataset for visualization
+  plot.data <- subset(plot.data, ssom.unit.classif==clustNum)
+  data.val3 <- plot.data
+  
+  #plot
+
+  p <- ggplot(data.val3, aes(PC1, PC2, color = genotype)) 
+  p + geom_point(size=I(2), alpha = 0.6) +
+    scale_colour_manual(values=c("#ef8a62", "#67a9cf")) + 
+    theme_bw() + 
+    theme(legend.text = element_text(
+      size = 16, 
+      face = "bold"))
+}
 ```
-vennDiagram Function:  
+
+```{r}
+#Prereq annotation files for function
+
+annotation1<- read.delim("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_ITAG_annotations.tsv", header=FALSE)  #Changed to the SGN human readable annotation
+colnames(annotation1) <- c("ITAG", "SGN_annotation")
+annotation2<- read.delim ("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_annotated.tsv")
+annotation <- merge(annotation1,annotation2, by = "ITAG")
+#Only Gene Name and ITAG
+annotation <- annotation[,c(1,3,5)]
+
+###genesInClust()
+
+#This looks at how many unique genes are in each cluster. 
+
+genesInClust <- function(clustNum) {
+  sub_cluster <- subset(plot.data, som$unit.classif==clustNum)
+  
+  sub_data <- as.data.frame(sub_cluster[,2])
+  colnames(sub_data) <- "ITAG"
+  resultsTable <- merge(sub_data,annotation,by = "ITAG", all.x=TRUE)
+  print(nrow(unique(resultsTable)))
+  return(unique(resultsTable))
+  }
+```
 
 ###Cluster 1
 
 ```{r}
 clusterVis(1)
+clusterVis_PCA(1)
+clusterVis_PCAsub(1)
 clusterVis_line(1)
-clusterGO(1)
+y <- genesInClust(1)
+kable(y, format = "latex", booktabs = TRUE)
+
+#clusterGO(1)
 ```
 
 ###Cluster 2
 
 ```{r}
 clusterVis(2)
+clusterVis_PCA(2)
+clusterVis_PCAsub(2)
 clusterVis_line(2)
-clusterGO(2)
+y <- genesInClust(2)
+kable(y, format = "latex", booktabs = TRUE)
 ```
 
 ###Cluster 3 
@@ -180,8 +248,11 @@ Ambr in WT is higher than in *tf2* and the WT genes in this cluster have a tight
 
 ```{r}
 clusterVis(3)
+clusterVis_PCA(3)
+clusterVis_PCAsub(3)
 clusterVis_line(3)
-clusterGO(3)
+y <- genesInClust(3)
+kable(y, format = "latex", booktabs = TRUE)
 ```
 
 Understanding the GO categories of cluster 3.
@@ -200,45 +271,379 @@ Understanding the GO categories of cluster 3.
 
 - [positive regulation of development, heterochronic](http://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0045962) Any process that modulates the consistent predetermined time point at which an integrated living unit or organism progresses from an initial condition to a later condition and increases the rate at which this time point is reached.
 
-###Cluster 4 
 
+
+###Cluster 4 
+ Solyc11g008830.1.1 & AT1G65620 & required for formation of a symmetric flat leaf lamina, encodes a member of a family of proteins characterized by cysteine repeats and a leucine zipper; involved in KNOX gene regulation.   Acts together with ASL1 in proximal-distal symmetry determination.\\
+ 
+ 
+ 
 ```{r}
 clusterVis(4)
+clusterVis_PCA(4)
+clusterVis_PCAsub(4)
 clusterVis_line(4)
-clusterGO(4)
+y <- genesInClust(4)
+kable(y, format = "latex", booktabs = TRUE)
 ```
+
 
 ###Cluster 5 
 
 
 ```{r}
 clusterVis(5)
+clusterVis_PCA(5)
+clusterVis_PCAsub(5)
 clusterVis_line(5)
-clusterGO(5) 
+y <- genesInClust(5)
+kable(y, format = "latex", booktabs = TRUE)
 ```
 
 ###Cluster  6
 
+
+
 ```{r}
 clusterVis(6)
+clusterVis_PCA(6)
+clusterVis_PCAsub(6)
 clusterVis_line(6)
-clusterGO(6)
+y <- genesInClust(6)
+kable(y, format = "latex", booktabs = TRUE)
 ```
 
-##Large SOM
-
-After viewing the `clusterVis_line()` clusters in `lcmSOM_analysis8_081514.Rmd`, I saw that there were a lot of noise that was associated in these main clusters.  I think if I make more clusters I can begin to see tighter gene expression clusters. I redid the clusters which are presented in the fie `analysis5d_081814.Rmd` where I specified for more clusters, this is the visulization of that.
-
-###Cmbr
-
-This is exploring the regions that differ in the CMBR.  What Clusters are very similar in everything BUT the CMBR?
+##Cluster 7
 
 ```{r}
-clusterVis(4)
-clusterVis_line(4)
-y <- genesInClust(4, plot.data, annotation)
+clusterVis(7)
+clusterVis_PCA(7)
+clusterVis_PCAsub(7)
+clusterVis_line(7)
+y <- genesInClust(7)
+kable(y, format = "latex", booktabs = TRUE)
 ```
 
+
+##Cluster 8
+
+```{r}
+clusterVis(8)
+clusterVis_PCA(8)
+clusterVis_PCAsub(8)
+clusterVis_line(8)
+y <- genesInClust(8)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 9
+
+```{r}
+clusterVis(9)
+clusterVis_PCA(9)
+clusterVis_PCAsub(9)
+clusterVis_line(9)
+y <- genesInClust(9)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 10
+
+```{r}
+clusterVis(10)
+clusterVis_PCA(10)
+clusterVis_PCAsub(10)
+clusterVis_line(10)
+y <- genesInClust(10)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 11
+
+```{r}
+clusterVis(11)
+clusterVis_PCA(11)
+clusterVis_PCAsub(11)
+clusterVis_line(11)
+y <- genesInClust(11)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 12
+
+```{r}
+clusterVis(12)
+clusterVis_PCA(12)
+clusterVis_PCAsub(12)
+clusterVis_line(12)
+y <- genesInClust(12)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 13
+
+```{r}
+clusterVis(13)
+clusterVis_PCA(13)
+clusterVis_PCAsub(13)
+clusterVis_line(13)
+y <- genesInClust(13)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 14
+
+```{r}
+clusterVis(14)
+clusterVis_PCA(14)
+clusterVis_PCAsub(14)
+clusterVis_line(14)
+y <- genesInClust(14)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 15
+
+```{r}
+clusterVis(15)
+clusterVis_PCA(15)
+clusterVis_PCAsub(15)
+clusterVis_line(15)
+y <- genesInClust(15)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 16
+
+```{r}
+clusterVis(16)
+clusterVis_PCA(16)
+clusterVis_PCAsub(16)
+clusterVis_line(16)
+y <- genesInClust(16)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 17
+
+```{r}
+clusterVis(17)
+clusterVis_PCA(17)
+clusterVis_PCAsub(17)
+clusterVis_line(17)
+y <- genesInClust(17)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 18
+
+```{r}
+clusterVis(18)
+clusterVis_PCA(18)
+clusterVis_PCAsub(18)
+clusterVis_line(18)
+y <- genesInClust(18)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 19
+
+```{r}
+clusterVis(19)
+clusterVis_PCA(19)
+clusterVis_PCAsub(19)
+clusterVis_line(19)
+y <- genesInClust(19)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 20
+
+```{r}
+clusterVis(20)
+clusterVis_PCA(20)
+clusterVis_PCAsub(20)
+clusterVis_line(20)
+y <- genesInClust(20)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+
+##Cluster 21
+
+```{r}
+clusterVis(21)
+clusterVis_PCA(21)
+clusterVis_PCAsub(21)
+clusterVis_line(21)
+y <- genesInClust(21)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 22
+
+```{r}
+clusterVis(22)
+clusterVis_PCA(22)
+clusterVis_PCAsub(22)
+clusterVis_line(22)
+y <- genesInClust(22)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 23
+
+```{r}
+clusterVis(23)
+clusterVis_PCA(23)
+clusterVis_PCAsub(23)
+clusterVis_line(23)
+y <- genesInClust(23)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 24
+
+```{r}
+clusterVis(24)
+clusterVis_PCA(24)
+clusterVis_PCAsub(24)
+clusterVis_line(24)
+y <- genesInClust(24)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 25
+
+```{r}
+clusterVis(25)
+clusterVis_PCA(25)
+clusterVis_PCAsub(25)
+clusterVis_line(25)
+y <- genesInClust(25)
+kable(y, format = "latex", booktabs = TRUE)
+```
+##Cluster 26
+
+```{r}
+clusterVis(26)
+clusterVis_PCA(26)
+clusterVis_PCAsub(26)
+clusterVis_line(26)
+y <- genesInClust(26)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 27
+
+```{r}
+clusterVis(27)
+clusterVis_PCA(27)
+clusterVis_PCAsub(27)
+clusterVis_line(27)
+y <- genesInClust(27)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 28
+
+```{r}
+clusterVis(28)
+clusterVis_PCA(28)
+clusterVis_PCAsub(28)
+clusterVis_line(28)
+y <- genesInClust(28)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 29
+
+```{r}
+clusterVis(29)
+clusterVis_PCA(29)
+clusterVis_PCAsub(29)
+clusterVis_line(29)
+y <- genesInClust(29)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 30
+
+```{r}
+clusterVis(30)
+clusterVis_PCA(30)
+clusterVis_PCAsub(30)
+clusterVis_line(30)
+y <- genesInClust(30)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 31
+
+```{r}
+clusterVis(31)
+clusterVis_PCA(31)
+clusterVis_PCAsub(31)
+clusterVis_line(31)
+y <- genesInClust(31)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 32
+
+```{r}
+clusterVis(32)
+clusterVis_PCA(32)
+clusterVis_PCAsub(32)
+clusterVis_line(32)
+y <- genesInClust(32)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+
+##Cluster 33
+
+```{r}
+clusterVis(33)
+clusterVis_PCA(33)
+clusterVis_PCAsub(33)
+clusterVis_line(33)
+y <- genesInClust(33)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 34
+
+```{r}
+clusterVis(34)
+clusterVis_PCA(34)
+clusterVis_PCAsub(34)
+clusterVis_line(34)
+y <- genesInClust(34)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 35
+
+```{r}
+clusterVis(35)
+clusterVis_PCA(35)
+clusterVis_PCAsub(35)
+clusterVis_line(35)
+y <- genesInClust(35)
+kable(y, format = "latex", booktabs = TRUE)
+```
+
+##Cluster 36
+
+```{r}
+clusterVis(36)
+clusterVis_PCA(36)
+clusterVis_PCAsub(36)
+clusterVis_line(36)
+y <- genesInClust(36)
+kable(y, format = "latex", booktabs = TRUE)
+```
 I need to write something that looks at the statistical difference in tissue between each genotype.  In order to do that I have to subset based on tissue and do a t-test?  Do I need to correct for multiple testing? Ideally what information do I want from these clusters?
 
 1. I want clusters that are enriched in leaf genes. Maybe I could just color special for leaf genes? done.

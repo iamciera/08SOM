@@ -55,12 +55,12 @@ clusterVis <- function(clustNum){
 clusterVis2 <- function(clustNum){
   sub_cluster <- subset(data.val2, som$unit.classif==clustNum)
   sub_data <- sub_cluster[,c(1, 8:13)] # just the sample types
-  
+  m.data <- melt(sub_data)
   m.data$region <- ifelse(grepl("wta", m.data$variable, ignore.case = T), "A.tip", 
                           ifelse(grepl("wtb", m.data$variable, ignore.case = T), "B.middle", "C.base"))
+  
   m.data$tissue <- ifelse(grepl("other", m.data$variable, ignore.case = T), "rachis", 
                           ifelse(grepl("mbr", m.data$variable, ignore.case = T), "margin", "NA"))
-  m.data <- melt(sub_data) 
   head(m.data)
  
   p <- ggplot(m.data, aes(x=tissue, y=value))
@@ -170,7 +170,6 @@ clusterVis_PCA <- function(clustNum) {
       size = 16, 
       face = "bold"))
 }
-Ø
 
 ###clusterVis_line
 
@@ -214,7 +213,6 @@ genesInClust <- function(clustNum, data.val2, annotation) {
   }
 
 
-###buildMatrix
 
 #You first need to build a matrix then loop over original values for population of matrix.
 #Maybe build function that sets the size of the matrix?

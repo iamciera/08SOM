@@ -279,13 +279,14 @@ clusterVis_PCA(2)
 
 Cluster 2 - Genes that are up-regulated in top rachis
 ========================================================
+left:30%
+
+![aother](images/img10.png)
+
+***
 ```{r, echo=FALSE}
 clusterVis(2)
 ```
-
-***
-
-![aother](images/img10.png)
 
 Cluster 2 - Photosynthetic GO categories
 ========================================================
@@ -353,7 +354,7 @@ left: 30%
 ***
 
 ```{r,echo=FALSE}
-clusterVis(17)
+clusterVis_region(17)
 ```
  
 
@@ -384,7 +385,7 @@ left: 30%
 ***
 
 ```{r,echo=FALSE}
-clusterVis2(35)
+clusterVis_region(35)
 ```
 
 Cluster 35 - Photosynthesis and Vascular Differentiation

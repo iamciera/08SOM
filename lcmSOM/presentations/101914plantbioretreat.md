@@ -231,11 +231,12 @@ Cluster 2
 
 Cluster 2 - Genes that are up-regulated in top rachis
 ========================================================
-![plot of chunk unnamed-chunk-8](101914plantbioretreat-figure/unnamed-chunk-8.png) 
-
-***
+left:30%
 
 ![aother](images/img10.png)
+
+***
+![plot of chunk unnamed-chunk-8](101914plantbioretreat-figure/unnamed-chunk-8.png) 
 
 Cluster 2 - Photosynthetic GO categories
 ========================================================

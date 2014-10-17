@@ -20,8 +20,8 @@ clusterVis <- function(clustNum){
 }
 
 
-clusterVis2 <- function(clustNum){
-  sub_cluster <- subset(data.val2, som$unit.classif==2)
+clusterVis_region <- function(clustNum){
+  sub_cluster <- subset(data.val2, som$unit.classif==clustNum)
   sub_data <- sub_cluster[,c(1, 8:13)] # just the sample types
   m.data <- melt(sub_data)
   m.data$region <- ifelse(grepl("wta", m.data$variable, ignore.case = T), "A.tip", 
@@ -30,6 +30,29 @@ clusterVis2 <- function(clustNum){
   m.data$tissue <- ifelse(grepl("other", m.data$variable, ignore.case = T), "rachis", 
                           ifelse(grepl("mbr", m.data$variable, ignore.case = T), "margin", "NA"))
 
+  p <- ggplot(m.data, aes(y=value, x=tissue, color = tissue))
+  p + geom_point(alpha=0.5,position="jitter", size=1) + 
+    geom_boxplot(alpha=0.70, outlier.size=0) +
+    scale_colour_manual(values = c("darkorchid1", "coral")) +
+    theme(legend.text = element_text(
+      size = 30, 
+      face = "bold"), 
+      text = element_text(size=40)) + 
+      theme_bw() + 
+      theme(text = element_text(size=30)) +
+      facet_grid(region~.)
+}
+
+clusterVis_regionSuper <- function(clustNum){
+  sub_cluster <- subset(data.val3, som$unit.classif==2)
+  sub_data <- sub_cluster[,c(1, 8:13)] # just the sample types
+  m.data <- melt(sub_data)
+  m.data$region <- ifelse(grepl("wta", m.data$variable, ignore.case = T), "A.tip", 
+                          ifelse(grepl("wtb", m.data$variable, ignore.case = T), "B.middle", "C.base"))
+  
+  m.data$tissue <- ifelse(grepl("other", m.data$variable, ignore.case = T), "rachis", 
+                          ifelse(grepl("mbr", m.data$variable, ignore.case = T), "margin", "NA"))
+  
   p <- ggplot(m.data, aes(y=value, x=tissue))
   p + geom_point(alpha=0.5,position="jitter", size=1) + 
     geom_boxplot(alpha=0.70, outlier.size=0) +
@@ -37,9 +60,8 @@ clusterVis2 <- function(clustNum){
       size = 30, 
       face = "bold"), 
       text = element_text(size=30)) + 
-      theme_bw() + facet_grid(region~.)
+    theme_bw() + facet_grid(region~.)
 }
-
 
 
 #clusterVis_geno Function

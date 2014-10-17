@@ -276,8 +276,6 @@ Understanding the GO categories of cluster 3.
 ###Cluster 4 
  Solyc11g008830.1.1 & AT1G65620 & required for formation of a symmetric flat leaf lamina, encodes a member of a family of proteins characterized by cysteine repeats and a leucine zipper; involved in KNOX gene regulation.   Acts together with ASL1 in proximal-distal symmetry determination.\\
  
- 
- 
 ```{r}
 clusterVis(4)
 clusterVis_PCA(4)
@@ -370,6 +368,26 @@ kable(y, format = "latex", booktabs = TRUE)
 ```
 
 ##Cluster 12
+
+
+Solyc12g006340.1.1 (ARF8):Encodes a member of the auxin response factor family.
+Solyc10g076790.1.1 (AUX1):  Encodes an auxin influx transporter.
+Solyc03g118740.2.1 (PIN1): Auxin efflux.
+
+
+
+
+Solyc09g065820.2.1:  DNA binding / transcription factor; cell differentiation.
+Solyc09g010780.2.1:  Involved in leaf development. Knockout mutants have abnormally shaped leaves.
+Solyc02g080260.2.1: Encodes a homeodomain protein that is expressed in the LI layer of the vegetative
+
+Solyc07g018290.2.1 (PLETHERA 1): expressed in young tissues and may specify meristematic or division-competent states. (Wilson et al., 2005).
+Solyc06g075850.1.1: Histone H4 : cytochrome P450 monooxygenase. Expressed in cotyledons and leaves
+Solyc04g009950.2.1: R2R3- type MYB- encoding genes
+
+Solyc10g008600.2.1: EMBRYO DEFECTIVE 1923
+Solyc11g012820.1.1: EMBRYO DEFECTIVE 1968
+
 
 ```{r}
 clusterVis(12)

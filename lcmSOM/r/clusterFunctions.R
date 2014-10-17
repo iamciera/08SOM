@@ -49,7 +49,12 @@ clusterVis <- function(clustNum){
   p <- ggplot(m.data, aes(x=variable, y=value))
   p + geom_point(alpha=0.5,position="jitter", size=1) + 
     geom_boxplot(alpha=0.75, outlier.size=0) + 
-    theme_bw()
+    theme_bw() + 
+    theme(text = element_text(size=30),
+          axis.text.x = element_text(angle=90, 
+                                     vjust=1)) +
+    xlab("Tissue Region") +
+    ylab("Scaled Gene Expression")
 }
 
 clusterVis2 <- function(clustNum){
@@ -61,29 +66,34 @@ clusterVis2 <- function(clustNum){
   
   m.data$tissue <- ifelse(grepl("other", m.data$variable, ignore.case = T), "rachis", 
                           ifelse(grepl("mbr", m.data$variable, ignore.case = T), "margin", "NA"))
-  head(m.data)
  
   p <- ggplot(m.data, aes(x=tissue, y=value))
   p + geom_point(alpha=0.5,position="jitter", size=1) + 
-    geom_boxplot(alpha=0.70, outlier.size=0) + 
-    theme_bw() + facet_grid(region ~ .) 
+    geom_boxplot(alpha=0.70, outlier.size=0) +
+    theme(legend.text = element_text(
+      size = 30, 
+      face = "bold"), 
+      text = element_text(size=30)) + 
+      theme_bw()
 }
+
+
 
 #clusterVis_geno Function
 #displays transformed data in a box plot and genotype information 
 
 clusterVis_geno <- function(clustNum){
   
-  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
-  head(sub_cluster)
+  sub_cluster <- subset(plot.data, ssom.unit.classif==1)
+  
   sub_data <- sub_cluster[,c(1,9:14)] # just the sample types
   names(sub_data)
   m.data <- melt(sub_data) 
   
   m.data$genotype <- as.factor(m.data$genotype)
   
-  #m.data$region <- ifelse(grepl("A", m.data$variable, ignore.case = T), "A.tip", 
-  #ifelse(grepl("B", m.data$variable, ignore.case = T), "B.middle", "C.base"))
+  m.data$region <- ifelse(grepl("A", m.data$variable, ignore.case = T), "A.tip", 
+   ifelse(grepl("B", m.data$variable, ignore.case = T), "B.middle", "C.base"))
   #m.data$tissue <- ifelse(grepl("other", m.data$variable, ignore.case = T), "rachis", 
   #ifelse(grepl("mbr", m.data$variable, ignore.case = T), "margin", "base"))
 
@@ -93,6 +103,7 @@ clusterVis_geno <- function(clustNum){
   theme_bw() + 
   scale_colour_manual(values=c("#ef8a62", "#67a9cf")) 
 }
+
 
 ###clusterGO()
 
@@ -167,8 +178,10 @@ clusterVis_PCA <- function(clustNum) {
     scale_colour_manual(values=c("#cccccc", "#000000")) + 
     theme_bw() + 
     theme(legend.text = element_text(
-      size = 16, 
-      face = "bold"))
+          size = 30, 
+          face = "bold"), 
+          text = element_text(size=30), 
+            legend.position="none")
 }
 
 ###clusterVis_line

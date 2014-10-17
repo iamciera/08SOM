@@ -1,0 +1,738 @@
+Patterns of Gene Expression in Early Developing Complex Leaves
+========================================================
+author: Ciera Martinez
+date: October 18, 2014
+font-family: 'Baskerville'
+css:cieraSlides.css
+
+Background
+========================================================
+title: FALSE
+
+</br></br>
+![cell differentiation](images/img7.png)
+
+
+Background
+========================================================
+title: False
+
+</br></br>
+![cell differentiation](images/img4.png)
+
+Background
+========================================================
+left: 60%
+title: false
+
+![cell differentiation](images/img6.png)
+
+***
+
+**Pattern 1**: Tip to base wave of differentiation.  
+Cell differentation occurring first at the tip.
+
+**Pattern 2**: Midrib to Marginal  blastozone or marginal meristem  
+(defined histologically as having dense cells and 
+maintenance of high rates of cell division)
+
+
+Main Question
+========================================================
+</br></br>
+What are the genes expression trends observed in early complex leaf 
+development that would explain differentiation patterning in the leaf?
+
+
+Approach 
+========================================================
+left: 60%
+
+![cell differentiation](images/img15.png)
+***
+Isolate tissue 
+
+**1**. longitudinal 
+axis (tip, mid, base)
+
+**2**. margins compared with all other tissue 
+(rachis  and midvein) regions, to perform gene expression analysis.
+
+```{r, echo=FALSE}
+##Load in prereqs
+library(ggplot2)
+library(reshape)
+library(kohonen)
+library(knitr)
+library(VennDiagram)
+source("../r/clusterFunctions.R")
+```
+
+Laser Capture Microdissection
+========================================================
+
+<video width="1000" controls="controls">
+<source src="movies/LCMmovie.m4v" type="video/mp4">
+</video>
+
+DE & GO enrichment
+========================================================
+
+![cell differentiation](images/img16.png)
+
+DE & GO enrichment
+========================================================
+
+<center>![cell differentiation](images/img18.png)</center>
+
+***
+
+</br></br>
+**Conclusion**
+
+The regions further along in development
+ will have up-regulation of GO categories 
+ associated with differentiated tissue. 
+
+Photosynthetic Activity
+========================================================
+
+<center>![cell differentiation](images/img19.png)</center>
+
+Photosynthetic Activity
+========================================================
+left: 30%
+
+<center>![cell differentiation](images/img20.png)</center>
+
+***
+
+It is unknown when and where photosynthetic activity is first evident in early developing leaves.
+
+
+Photosynthetic Activity
+========================================================
+left: 30%
+
+<center>![cell differentiation](images/img20.png)</center>
+
+***
+
+**Approach**: Chlorophyll a/b binding protein (CAB)::GUS  
+localization reflects photosynthetic activity.
+
+Photosynthetic Activity
+========================================================
+left: 30%
+
+<center>![cell differentiation](images/img21.png)</center>
+
+***
+
+**Approach**: Chlorophyll a/b binding protein (CAB)::GUS  
+localization reflects photosynthetic activity.
+
+Ubiquitous in mature leaves.  
+
+Photosynthetic Activity
+========================================================
+left: 30%
+
+<center>![cell differentiation](images/img21.png)</center>
+
+***
+
+**Approach**: Chlorophyll a/b binding protein (CAB)::GUS  
+localization reflects photosynthetic activity.
+
+Ubiquitous in mature leaves. 
+
+Where does CAB localize early in leaf development?
+
+Photosynthetic Activity
+========================================================
+
+<center>![cell differentiation](images/img22.png)</center>
+
+Photosynthetic Activity
+========================================================
+</br>
+**Conclusions 1**: Early in leaf development (P4 & P5), the rachis 
+and midviein show CAB activity, suggesting these regions are
+first to start specialized processes such as photosynthesis. 
+
+**Conclustion 2**: The LCM approach for determining gene expression 
+patterns is capable of predicting verifiable expression patterns.
+
+Co-expression Analysis 
+========================================================
+
+<center>![cell differentiation](images/img23.png)</center>
+
+***
+
+**Question 1**: Does clustering give similar GO enrichment 
+results  to DE analysis?
+
+**Question 2**: Are there patterns of gene expression that 
+explain margin/rachis identity?
+
+**Question 3**:  Can we get to smaller subset of genes that 
+may explain differentiation patterning during leaf development?
+
+Principle Component Analysis
+========================================================
+left: 50%
+
+```{r, echo=FALSE}
+#Code from `lcmSOM_analysis9_081814.Rmd`
+genes25 <- read.csv("../data/analysis4.top25.csv")
+genes25 <- genes25[,c(2,9:14)]
+
+scale_data <- as.matrix(t(scale(t(genes25[c(2:7)])))) 
+pca <- prcomp(scale_data, scale=TRUE) 
+
+pca.scores <- data.frame(pca$x)
+
+data.val <- cbind(genes25, scale_data, pca.scores) 
+
+p <- ggplot(data.val, aes(PC1, PC2)) 
+p + geom_point() 
+```
+
+PC1 (29.2%)  
+
+PC2 (20.8%) 
+***
+```{r, echo=FALSE}
+p <- ggplot(data.val, aes(PC3, PC4)) 
+p + geom_point()
+```
+</br>
+PC3 (20.3%) 
+
+PC4 (15.6%)
+
+Self Organizing Maps  
+========================================================
+
+</br></br> 
+Group genes with similar expression patterns to clusters 
+or nodes. 
+
+***
+
+</br></br> 
+Explain what SOM better. 
+
+Self Organizing Maps: Limit to six clusters
+========================================================
+
+![map](images/img9.png)
+
+***
+
+```{r, echo=FALSE}
+#Anlalysis from lcmSOM_analysis9_081814.Rmd
+
+set.seed(6)
+som <- som(data=scale_data, somgrid(3,2,"hexagonal")) # This is where you change the size of the map
+plot(som, type = "codes")
+```
+
+Clusters help define PCA clustering
+========================================================
+
+```{r, echo=FALSE}
+p <- ggplot(data.val, aes(PC1, PC2)) 
+p + geom_point() 
+```
+
+***
+```{r, echo=FALSE}
+data.val2 <- cbind(data.val,som$unit.classif,som$distances) 
+
+#rename
+names(data.val2)[20] <- "unit.classif"
+data.val2$unit.classif <- as.factor(data.val2$unit.classif)
+
+#visualize
+data.val2$unit.classif <- as.factor(data.val2$unit.classif)
+p <- ggplot(data.val2, aes(PC1, PC2, color = unit.classif)) 
+p + geom_point(size=I(3), alpha = 0.6) +
+  theme_bw()
+```
+
+=================================
+
+</br></br>
+</br></br>
+**Question 1**: What genes define these clusters? Does clustering give similar GO enrichment results to DE analysis?
+
+Cluster 2 
+========================================================
+
+```{r, echo=FALSE}
+clusterVis_PCA(2)
+```
+
+Cluster 2 - Genes that are up-regulated in top rachis
+========================================================
+```{r, echo=FALSE}
+clusterVis(2)
+```
+
+***
+
+![aother](images/img10.png)
+
+Cluster 2 - Photosynthetic GO categories
+========================================================
+![aother](images/img10.png)
+
+***
+
+
+**Question 1**: Does clustering give similar GO enrichment 
+results to DE analysis?
+
+Yes. Recapitulates DE expression patterns in tissue 
+specific regions.
+
+**GO Categories**
+- heme binding                   
+- oxygen binding                  
+- photosynthesis, light harvesting
+- apoptotic process  
+
+
+
+
+========================================================
+
+<center>![cell differentiation](images/img23.png)</center>
+
+***
+</br></br>
+
+**Question 2:** What are the specifc genes that contribute to marginal idenity?
+
+**Approach:** Make a larger self organizing map allowing clusters that can specify regulated genes across multiple tissue types. 
+
+Self Organizing Maps - Allow 36 clusters
+========================================================
+left: 60%
+```{r, echo=FALSE}
+#based off analysis from 
+genes25 <- read.csv("../data/analysis4.top25.csv")
+genes25 <- genes25[,c(2,9:14)]
+
+scale_data <- as.matrix(t(scale(t(genes25[c(2:7)])))) 
+pca <- prcomp(scale_data, scale=TRUE) 
+
+pca.scores <- data.frame(pca$x)
+
+data.val <- cbind(genes25, scale_data, pca.scores) 
+set.seed(6)
+som <- som(data=scale_data, somgrid(6,6,"hexagonal")) # This is where you change the size of the map
+plot(som, type = "codes")
+data.val2 <- cbind(data.val,som$unit.classif,som$distances) 
+```
+
+***
+
+![map](images/img9.png)
+
+Cluster 17 Up-regulated in rachis compared to margin 
+========================================================
+left: 30%
+
+![map](images/img23.png)
+
+***
+
+```{r,echo=FALSE}
+clusterVis(17)
+```
+ 
+
+Cluster 17: Growth Genes
+========================================================
+left: 80%
+
+<small>Auxin Response 6 - auxin response via expression of auxin regulated genes
+
+gibberellin 2-oxidase - responsive to cytokinin and KNOX activities
+
+ARGONAUTE7 - required for mediolateral expansion in maize (Douglas et al, 2010)
+
+REDUCED STEM BRANCHING 6 - MADS-box transcription factor, mutant flower margins expanded (TAIR mutant lines)
+
+AP2/B3 domain transcription factor - may function as a negative growth regulator
+
+R2R3-MYB TF factor gene -  MYB gene involved in cell fate idenity & Lateral Meristem Initiation (Muller et al., 2005)
+
+EMBRYO DEFECTIVE - mutant with enlarged SAM (Cushing et al. 2005)</small>
+
+Cluster 35
+========================================================
+left: 30%
+
+![map](images/img23.png)
+
+***
+
+```{r,echo=FALSE}
+clusterVis2(35)
+```
+
+Cluster 35 - Photosynthesis and Vascular Differentiation
+========================================================
+<small>**Solyc00g277510** - Encodes chlorophyll binding protein D1, a part of the photosystem II reaction center core
+
+**Solyc02g071000** - Subunit of light-harvesting complex II (LHCII),which absorbs light and transfers energy to the photosynthetic reaction center.
+
+**Solyc05g013570** - phototropic-responsive NPH3 family protein
+
+**Solyc05g041230** - chloroplast gene encoding a CP43 subunit of  the photosystem II reaction center.
+
+**Solyc08g066500** - Member of the class III HD-ZIP protein family. Critical for vascular development.
+
+**Solyc08g067330** - Encodes lhcb1.1 a component of the LHCIIb light harvesting complex associated with photosystem II.</small>
+
+Further investigation using mutant with accelerated cellular differentiation
+========================================================
+
+The trifoliate mutant is unable to make leaflets in rachis.
+========================================================
+
+<center>![trifoliate](images/img24.png)</center>
+*trifoliate* mutant is unable to make leaflets in response to exogenous
+auxin applications, indicating lack of competence in the 
+primordium.
+
+
+Basic Vs. Super Self Organized Maps
+========================================================
+</br></br>
+![SOMdiagram](images/img13.png)
+
+Basic SOM Small - Rachis & Tip up-regulated genes
+========================================================
+left:30%
+```{r, echo=FALSE}
+#Analysis from lcmSOM_analysis7_081314.Rmd
+plot.data <- read.table("../data/analysis1.som.data.small.ALLD.txt",header=TRUE)
+
+
+#clusterVis Function
+#displays transformed data in a box plot and 
+clusterVis <- function(clustNum){
+  
+  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
+  sub_data <- sub_cluster[,9:14] # just the sample types
+  m.data <- melt(sub_data) 
+  
+  p <- ggplot(m.data, aes(x=variable, y=value))
+  p + geom_point(alpha=0.5, position="jitter", size=1) + geom_boxplot(alpha=0.75, outlier.size=0) 
+}
+
+clusterNum <- function(clustNum){
+
+  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
+#   print(paste("total number of genes in sub cluster is ", 
+#               nrow(sub_cluster)
+#               )
+#         )
+
+  scwt <- subset(sub_cluster, genotype == "wt")
+#   print(paste("total number of genes in wt cluster is ", 
+#               nrow(scwt)
+#               )
+#         )
+
+  sctf2 <- subset(sub_cluster, genotype == "tf2")
+#   print(paste("total number of genes in tf2 cluster is ", 
+#               nrow(sctf2)
+#               )
+#         )
+  
+  scIntersect <- as.data.frame(intersect(scwt$gene, sctf2$gene))
+#    print(paste("There are", 
+#                length(intersect(scwt$gene, sctf2$gene)), 
+#                " that are the same between wt and tf2"
+#                )
+#          )
+  
+  ##Venn Diagram part
+  grid.newpage()
+  venn.plot <- draw.pairwise.venn(area1 = nrow(scwt),
+                              area2    = nrow(sctf2),
+                              cross.area = length(intersect(scwt$gene, sctf2$gene)),
+                              scaled       = F,
+                              category     = c("Wildtype", "tf2"),
+                              fill         = c("blue", "red"),
+                                alpha        = 0.3,
+                                lty          = "blank",
+                                cex          = 2,
+                                cat.cex      = 2,
+                                cat.pos      = c(315, 25),
+                                cat.dist     = 0.09,
+                                cat.just     = list(c(-1, -1), c(1, 1)),
+                                ext.pos      = 30,
+                                ext.dist     = -0.05,
+                                ext.length   = 0.85)
+  grid.draw(venn.plot)
+
+}
+
+```
+
+![aother](images/img10.png)
+***
+
+```{r, echo=FALSE}
+clusterVis_geno(5)
+```
+
+
+Basic Organized Maps
+========================================================
+```{r, echo=FALSE}
+clusterNum(5)
+```
+
+***
+
+- GO enrichment reflects previous DE expression: in this case photosythetic enriched.
+- We can go further by looking into what sorts of genes are similar & different between the groups, to try to understand further how these genotypes are differently regulated. 
+
+Basic Organized Maps
+========================================================
+```{r, echo=FALSE}
+clusterNum(5)
+```
+
+***
+
+- GO enrichment reflects previous DE expression: in this case photosythetic enriched.
+- We can go further by looking into what sorts of genes are similar & different between the groups, to try to understand further how these genotypes are differently regulated. 
+
+Basic Organized Maps - Margin at Base 
+========================================================
+left:30%
+
+![aother](images/img14.png)
+***
+```{r, echo=FALSE}
+clusterNum(2)
+```
+
+Basic Organized Maps - Margin at Base 
+========================================================
+left:30%
+
+![aother](images/img14.png)
+***
+- GO sequence-specific DNA binding transcription factor activity & transcription factor complex
+
+- *tf2* specific includes developmental genes YABBY, KNAT6, ARF8, SCARECROW
+
+- WT specific includes NAC transcription factor
+
+**Still too many genes!**
+
+Future : Need to look at larger SOMs for more refined co-expression patterns. 
+
+Super Self Organized Maps (superSOM)
+========================================================
+
+![somDiagram](images/img13.png)
+
+Super SOM: clusters have dimensionality and a separate 
+identity associated with genotype data set, but ultimately, 
+data must be assigned to the same cluster.
+
+Super Organized Maps
+========================================================
+
+![somDiagram](images/img13.png)
+
+```{r, echo = FALSE}
+plot.data <- read.table("../data/ssom.data.analysis5d.txt",header=TRUE)
+
+#clusterVis Function
+#displays transformed data in a box plot 
+clusterVis <- function(clustNum){
+  
+  sub_cluster <- subset(plot.data, ssom.unit.classif==clustNum)
+  sub_data <- sub_cluster[,c(1, 9:14)] # just the sample types
+  m.data <- melt(sub_data) 
+  p <- ggplot(m.data, aes(x=variable, y=value, color = genotype))
+  p + geom_point(alpha=0.5,position="jitter", size=1) + 
+    geom_boxplot(alpha=0.75, outlier.size=0) + 
+    theme_bw()
+}
+  clusterVis_line <- function(clustNum) {
+  sub_cluster <- subset(plot.data, ssom.unit.classif==clustNum)
+  sub_data <- sub_cluster[,c(1, 2, 9:14)] # just the sample types
+  sub_data <- melt(sub_data)
+  sub_data <- within(sub_data, lineGroup <- paste(genotype, gene,sep='.'))
+  ggplot(sub_data, aes(variable, value, group = lineGroup, color =  genotype )) + 
+    geom_line(alpha = .1, (aes(color = factor(genotype)))) + 
+    geom_point(alpha = .0)
+  }
+  
+genesInClust <- function(clustNum) {
+  sub_cluster <- subset(plot.data, ssom.unit.classif==clustNum)
+  sub_data <- as.data.frame(sub_cluster[,2])
+  colnames(sub_data) <- "ITAG"
+  resultsTable <- merge(sub_data,annotation,by = "ITAG", all.x=TRUE)
+  print(nrow(resultsTable))
+#  return(resultsTable <- unique(resultsTable))
+  return(unique(resultsTable))
+  }
+
+genesInClust <- function(clustNum, plot.data, annotation) {
+  sub_cluster <- subset(plot.data, ssom.unit.classif==clustNum)
+  sub_data <- as.data.frame(sub_cluster[,2])
+  colnames(sub_data) <- "ITAG"
+  resultsTable <- merge(sub_data,annotation,by = "ITAG", all.x=TRUE)
+  print(nrow(unique(resultsTable)))
+  return(unique(resultsTable))
+  }
+
+clusterVis_PCA <- function(clustNum) {
+  
+  
+  #make dataset for visualization
+  data.val3 <- plot.data
+  names(data.val3)
+  data.val3$cluster[data.val3[,21] == clustNum] <- "subcluster"
+  data.val3$cluster[data.val3[,21] != clustNum] <- "other"
+  
+  #plot
+
+  p <- ggplot(data.val3, aes(PC1, PC2, color = cluster)) 
+  p + geom_point(size=I(2), alpha = 0.6) +
+    scale_colour_manual(values=c("#cccccc", "#000000")) + 
+    theme_bw() + 
+    theme(legend.text = element_text(
+      size = 16, 
+      face = "bold")) + 
+    facet_grid(. ~ genotype)
+}
+
+clusterVis_PCAsub <- function(clustNum) {
+  
+  
+  #make dataset for visualization
+  plot.data <- subset(plot.data, ssom.unit.classif==clustNum)
+  data.val3 <- plot.data
+  
+  #plot
+
+  p <- ggplot(data.val3, aes(PC1, PC2, color = genotype)) 
+  p + geom_point(size=I(5), alpha = 0.6) +
+    scale_colour_manual(values=c("#ef8a62", "#67a9cf")) + 
+    theme_bw() + 
+    theme(legend.text = element_text(
+      size = 16, 
+      face = "bold"))
+
+}
+```
+
+SuperSOM - Cluster 12
+========================================================
+
+```{r, echo=FALSE}
+
+clusterVis(12)
+```
+
+***
+
+```{r, echo=FALSE}
+
+clusterVis_line(12)
+```
+
+SuperSOM - Cluster 12
+========================================================
+
+```{r, echo=FALSE}
+
+clusterVis_PCA(12)
+
+```
+
+***
+
+```{r, echo=FALSE}
+
+clusterVis_PCAsub(12)
+```
+
+SuperSOM - Cluster 12
+========================================================
+
+<H3>Auxin Regulation and Transport</H3>
+
+**Solyc12g006340.1.1 (ARF8)**:Encodes a member of the auxin response factor family.
+
+**Solyc10g076790.1.1 (AUX1)**:  Encodes an auxin influx transporter.
+
+**Solyc03g118740.2.1 (PIN1)**: Auxin efflux.
+
+SuperSOM - Cluster 12
+========================================================
+
+<H3>Developmental Transciption Factors</H3>
+
+**Solyc09g065820.2.1**:  DNA binding / transcription factor; cell differentiation.
+
+**Solyc09g010780.2.1**:  Involved in leaf development. Knockout mutants have abnormally shaped leaves.
+
+**Solyc02g080260.2.1**: Encodes a homeodomain protein that is expressed in the LI layer of the vegetative
+
+**Solyc07g018290.2.1 (PLETHERA 1)**: expressed in young tissues and may specify meristematic or division-competent states. (Wilson et al., 2005).
+
+**Solyc06g075850.1.1**: Histone H4 : cytochrome P450 monooxygenase. Expressed in cotyledons and leaves
+
+**Solyc04g009950.2.1**: R2R3- type MYB- encoding genes
+
+SuperSOM - Cluster 28
+========================================================
+
+```{r, echo=FALSE}
+clusterVis_line(28)
+```
+
+SuperSOM - Cluster 28
+========================================================
+
+```{r, echo=FALSE}
+
+clusterVis_PCA(28)
+```
+
+***
+
+```{r, echo=FALSE}
+clusterVis_PCAsub(28)
+```
+
+Conclusions
+========================================================
+1. 
+
+
+Future
+========================================================
+
+- Look into SOMs a closer, identify possible canidates for 
+functional work
+
+- Network analysis to identify major hubs of developmental 
+patterning

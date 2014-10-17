@@ -25,10 +25,11 @@ Background
 left: 60%
 title: false
 
+<br/><br/>
 ![cell differentiation](images/img6.png)
 
 ***
-
+<br/><br/>
 **Pattern 1**: Tip to base wave of differentiation.  
 Cell differentation occurring first at the tip.
 
@@ -410,6 +411,8 @@ The trifoliate mutant is unable to make leaflets in rachis.
 *trifoliate* mutant is unable to make leaflets in response to exogenous
 auxin applications, indicating lack of competence in the 
 primordium.
+
+The TF-2 gene is required to maintain morphogenetic potential.
 
 
 Basic Vs. Super Self Organized Maps

@@ -25,10 +25,11 @@ Background
 left: 60%
 title: false
 
+<br/><br/>
 ![cell differentiation](images/img6.png)
 
 ***
-
+<br/><br/>
 **Pattern 1**: Tip to base wave of differentiation.  
 Cell differentation occurring first at the tip.
 
@@ -342,6 +343,8 @@ The trifoliate mutant is unable to make leaflets in rachis.
 auxin applications, indicating lack of competence in the 
 primordium.
 
+The TF-2 gene is required to maintain morphogenetic potential.
+
 
 Basic Vs. Super Self Organized Maps
 ========================================================
@@ -356,137 +359,31 @@ left:30%
 ![aother](images/img10.png)
 ***
 
-![plot of chunk unnamed-chunk-13](101914plantbioretreat-figure/unnamed-chunk-13.png) 
-
-
-Basic Organized Maps
-========================================================
-![plot of chunk unnamed-chunk-14](101914plantbioretreat-figure/unnamed-chunk-14.png) 
-
-***
-
-- GO enrichment reflects previous DE expression: in this case photosythetic enriched.
-- We can go further by looking into what sorts of genes are similar & different between the groups, to try to understand further how these genotypes are differently regulated. 
-
-Basic Organized Maps
-========================================================
-![plot of chunk unnamed-chunk-15](101914plantbioretreat-figure/unnamed-chunk-15.png) 
-
-***
-
-- GO enrichment reflects previous DE expression: in this case photosythetic enriched.
-- We can go further by looking into what sorts of genes are similar & different between the groups, to try to understand further how these genotypes are differently regulated. 
-
-Basic Organized Maps - Margin at Base 
-========================================================
-left:30%
-
-![aother](images/img14.png)
-***
-![plot of chunk unnamed-chunk-16](101914plantbioretreat-figure/unnamed-chunk-16.png) 
-
-Basic Organized Maps - Margin at Base 
-========================================================
-left:30%
-
-![aother](images/img14.png)
-***
-- GO sequence-specific DNA binding transcription factor activity & transcription factor complex
-
-- *tf2* specific includes developmental genes YABBY, KNAT6, ARF8, SCARECROW
-
-- WT specific includes NAC transcription factor
-
-**Still too many genes!**
-
-Future : Need to look at larger SOMs for more refined co-expression patterns. 
-
-Super Self Organized Maps (superSOM)
-========================================================
-
-![somDiagram](images/img13.png)
-
-Super SOM: clusters have dimensionality and a separate 
-identity associated with genotype data set, but ultimately, 
-data must be assigned to the same cluster.
-
-Super Organized Maps
-========================================================
-
-![somDiagram](images/img13.png)
 
 
 
-SuperSOM - Cluster 12
-========================================================
-
-![plot of chunk unnamed-chunk-18](101914plantbioretreat-figure/unnamed-chunk-18.png) 
-
-***
-
-![plot of chunk unnamed-chunk-19](101914plantbioretreat-figure/unnamed-chunk-19.png) 
-
-SuperSOM - Cluster 12
-========================================================
-
-![plot of chunk unnamed-chunk-20](101914plantbioretreat-figure/unnamed-chunk-20.png) 
-
-***
-
-![plot of chunk unnamed-chunk-21](101914plantbioretreat-figure/unnamed-chunk-21.png) 
-
-SuperSOM - Cluster 12
-========================================================
-
-<H3>Auxin Regulation and Transport</H3>
-
-**Solyc12g006340.1.1 (ARF8)**:Encodes a member of the auxin response factor family.
-
-**Solyc10g076790.1.1 (AUX1)**:  Encodes an auxin influx transporter.
-
-**Solyc03g118740.2.1 (PIN1)**: Auxin efflux.
-
-SuperSOM - Cluster 12
-========================================================
-
-<H3>Developmental Transciption Factors</H3>
-
-**Solyc09g065820.2.1**:  DNA binding / transcription factor; cell differentiation.
-
-**Solyc09g010780.2.1**:  Involved in leaf development. Knockout mutants have abnormally shaped leaves.
-
-**Solyc02g080260.2.1**: Encodes a homeodomain protein that is expressed in the LI layer of the vegetative
-
-**Solyc07g018290.2.1 (PLETHERA 1)**: expressed in young tissues and may specify meristematic or division-competent states. (Wilson et al., 2005).
-
-**Solyc06g075850.1.1**: Histone H4 : cytochrome P450 monooxygenase. Expressed in cotyledons and leaves
-
-**Solyc04g009950.2.1**: R2R3- type MYB- encoding genes
-
-SuperSOM - Cluster 28
-========================================================
-
-![plot of chunk unnamed-chunk-22](101914plantbioretreat-figure/unnamed-chunk-22.png) 
-
-SuperSOM - Cluster 28
-========================================================
-
-![plot of chunk unnamed-chunk-23](101914plantbioretreat-figure/unnamed-chunk-23.png) 
-
-***
-
-![plot of chunk unnamed-chunk-24](101914plantbioretreat-figure/unnamed-chunk-24.png) 
-
-Conclusions
-========================================================
-1. 
 
 
-Future
-========================================================
 
-- Look into SOMs a closer, identify possible canidates for 
-functional work
 
-- Network analysis to identify major hubs of developmental 
-patterning
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+Error in eval(expr, envir, enclos) : object 'ssom.unit.classif' not found
+```

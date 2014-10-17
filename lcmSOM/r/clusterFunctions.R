@@ -1,43 +1,5 @@
 ###Cluster Functions 
 
-###Multi-Plot
-
-multiplot <- function(..., plotlist=NULL, file, cols=2, layout=NULL) {
-  require(grid)
-
-  # Make a list from the ... arguments and plotlist
-  plots <- c(list(...), plotlist)
-
-  numPlots = length(plots)
-
-  # If layout is NULL, then use 'cols' to determine layout
-  if (is.null(layout)) {
-    # Make the panel
-    # ncol: Number of columns of plots
-    # nrow: Number of rows needed, calculated from # of cols
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                    ncol = cols, nrow = ceiling(numPlots/cols))
-  }
-
- if (numPlots==1) {
-    print(plots[[1]])
-
-  } else {
-    # Set up the page
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-
-    # Make each plot, in the correct location
-    for (i in 1:numPlots) {
-      # Get the i,j matrix positions of the regions that contain this subplot
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
-    }
-  }
-}
-
 #clusterVis Function
 #displays transformed data in a box plot 
 
@@ -108,7 +70,6 @@ clusterVis_geno <- function(clustNum){
 ###clusterGO()
 
 #Prints out how many genes in cluster and performs GO enrichment. 
-
 #*One thing you can add is if you do slim or regular GO.  Or both.*
 
 clusterGO <- function(clustNum){
@@ -162,9 +123,7 @@ clusterGO <- function(clustNum){
 ###clusterVis_PCA
 ##Highlights the cluster in the PCA map 
 
-
 clusterVis_PCA <- function(clustNum) {
-  
   
   #make dataset for visualization
   data.val3 <- data.val2
@@ -206,14 +165,15 @@ annotation1<- read.delim("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabi
 colnames(annotation1) <- c("ITAG", "SGN_annotation")
 annotation2<- read.delim ("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_annotated.tsv")
 annotation <- merge(annotation1,annotation2, by = "ITAG")
+
 #Only Gene Name and ITAG
 annotation <- annotation[,c(1,3,5)]
+
 #fix to one regex
 annotation$ITAG <- gsub("^(.*)[.].*", "\\1", annotation$ITAG)
 annotation$ITAG <- gsub("^(.*)[.].*", "\\1", annotation$ITAG)
 
 ###genesInClust()
-
 #This looks at how many unique genes are in each cluster. 
 
 genesInClust <- function(clustNum, data.val2, annotation) {
@@ -227,21 +187,3 @@ genesInClust <- function(clustNum, data.val2, annotation) {
 
 
 
-#You first need to build a matrix then loop over original values for population of matrix.
-#Maybe build function that sets the size of the matrix?
-
-#iterations = 6
-#variables = 6
-# 
-# output <- matrix(ncol=variables, nrow=iterations)
-# 
-# for (i in 1:clustNum) {
-#   subClusterA <- subset(data.val2, som$subClusterA == i)
-#   subClusterB <- subClusterA[,c(1,8:13,22)] #select only the columns I need
-#     
-#       for (k in 1:variables)
-#       subClusterB <- subset(data.val2, som$subClusterB == k)
-#       
-#     output[i,] <- length(intersect(sub_clusterA, sub_clusterB[k]))
-#   
-# }

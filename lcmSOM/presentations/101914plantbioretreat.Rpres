@@ -4,6 +4,9 @@ author: Ciera Martinez
 date: October 18, 2014
 font-family: 'Baskerville'
 css:cieraSlides.css
+transition: fade
+width: 1440
+height: 700
 
 Background
 ========================================================
@@ -33,10 +36,39 @@ title: false
 **Pattern 1**: Tip to base wave of differentiation.  
 Cell differentation occurring first at the tip.
 
+Background
+========================================================
+left: 60%
+title: false
+
+<br/><br/>
+![cell differentiation](images/img6.png)
+
+***
+<br/><br/>
+**Pattern 1**: Tip to base wave of differentiation.  
+Cell differentation occurring first at the tip.
+
 **Pattern 2**: Midrib to Marginal  blastozone or marginal meristem  
 (defined histologically as having dense cells and 
 maintenance of high rates of cell division)
 
+Background
+========================================================
+left: 60%
+title: false
+
+<br/><br/>
+![cell differentiation](images/img23.png)
+
+***
+<br/><br/>
+**Pattern 1**: Tip to base wave of differentiation.  
+Cell differentation occurring first at the tip.
+
+**Pattern 2**: Midrib to Marginal  blastozone or marginal meristem  
+(defined histologically as having dense cells and 
+maintenance of high rates of cell division)
 
 Main Question
 ========================================================
@@ -76,15 +108,15 @@ Laser Capture Microdissection
 <source src="movies/LCMmovie.m4v" type="video/mp4">
 </video>
 
-DE & GO enrichment
+Differential Expression (DE) & GO enrichment
 ========================================================
 
-![cell differentiation](images/img16.png)
+<center>![cell differentiation](images/img16.png)</center>
 
 DE & GO enrichment
 ========================================================
-
-<center>![cell differentiation](images/img18.png)</center>
+left: 70%
+<center>![cell differentiation](images/img16.5.png)</center>
 
 ***
 
@@ -197,8 +229,13 @@ pca.scores <- data.frame(pca$x)
 
 data.val <- cbind(genes25, scale_data, pca.scores) 
 
-p <- ggplot(data.val, aes(PC1, PC2)) 
-p + geom_point() 
+p <- ggplot(data.val, aes(PC1, PC2))  
+p + geom_point() + 
+   theme(legend.text = element_text(
+          size = 30, 
+          face = "bold"), 
+          text = element_text(size=30), 
+            legend.position="none")
 ```
 
 PC1 (29.2%)  
@@ -207,7 +244,12 @@ PC2 (20.8%)
 ***
 ```{r, echo=FALSE}
 p <- ggplot(data.val, aes(PC3, PC4)) 
-p + geom_point()
+p + geom_point() + 
+   theme(legend.text = element_text(
+          size = 30, 
+          face = "bold"), 
+          text = element_text(size=30), 
+            legend.position="none")
 ```
 </br>
 PC3 (20.3%) 
@@ -215,16 +257,18 @@ PC3 (20.3%)
 PC4 (15.6%)
 
 Self Organizing Maps  
-========================================================
+=======================================================
+left: 80% 
+<br/><br/>
+<br/><br/>
+<H2>Groups objects based on categories that define them.</H2> 
 
-</br></br> 
-Group genes with similar expression patterns to clusters 
-or nodes. 
+Self Organizing Maps  
+=======================================================
+left: 80% 
 
-***
+![map](images/img27.png)
 
-</br></br> 
-Explain what SOM better. 
 
 Self Organizing Maps: Limit to six clusters
 ========================================================
@@ -246,7 +290,12 @@ Clusters help define PCA clustering
 
 ```{r, echo=FALSE}
 p <- ggplot(data.val, aes(PC1, PC2)) 
-p + geom_point() 
+p + geom_point() +    
+  theme(legend.text = element_text(
+          size = 30, 
+          face = "bold"), 
+          text = element_text(size=30), 
+            legend.position="none")
 ```
 
 ***
@@ -261,7 +310,12 @@ data.val2$unit.classif <- as.factor(data.val2$unit.classif)
 data.val2$unit.classif <- as.factor(data.val2$unit.classif)
 p <- ggplot(data.val2, aes(PC1, PC2, color = unit.classif)) 
 p + geom_point(size=I(3), alpha = 0.6) +
-  theme_bw()
+  theme_bw() +
+      theme(legend.text = element_text(
+          size = 30, 
+          face = "bold"), 
+          text = element_text(size=30), 
+            legend.position="none")
 ```
 
 =================================
@@ -270,14 +324,14 @@ p + geom_point(size=I(3), alpha = 0.6) +
 </br></br>
 **Question 1**: What genes define these clusters? Does clustering give similar GO enrichment results to DE analysis?
 
-Cluster 2 
+Cluster 2
 ========================================================
 
 ```{r, echo=FALSE}
 clusterVis_PCA(2)
 ```
 
-Cluster 2 - Genes that are up-regulated in top rachis
+Cluster 2 - Genes that are up-regulated in top midvein 
 ========================================================
 left:30%
 
@@ -298,14 +352,16 @@ Cluster 2 - Photosynthetic GO categories
 **Question 1**: Does clustering give similar GO enrichment 
 results to DE analysis?
 
-Yes. Recapitulates DE expression patterns in tissue 
-specific regions.
-
 **GO Categories**
 - heme binding                   
 - oxygen binding                  
 - photosynthesis, light harvesting
 - apoptotic process  
+
+Yes. Recapitulates DE expression patterns in tissue 
+specific regions.
+
+
 
 
 
@@ -402,165 +458,40 @@ Cluster 35 - Photosynthesis and Vascular Differentiation
 
 **Solyc08g067330** - Encodes lhcb1.1 a component of the LHCIIb light harvesting complex associated with photosystem II.</small>
 
-Further investigation using mutant with accelerated cellular differentiation
+ trifoliate (tf-2) mutant 
 ========================================================
+left: 60%
 
-The trifoliate mutant is unable to make leaflets in rachis.
-========================================================
+![trifoliate](images/img24.png)
 
-<center>![trifoliate](images/img24.png)</center>
-*trifoliate* mutant is unable to make leaflets in response to exogenous
-auxin applications, indicating lack of competence in the 
-primordium.
-
-The TF-2 gene is required to maintain morphogenetic potential.
-
-
-Basic Vs. Super Self Organized Maps
-========================================================
-</br></br>
-![SOMdiagram](images/img13.png)
-
-Basic SOM Small - Rachis & Tip up-regulated genes
-========================================================
-left:30%
-```{r, echo=FALSE}
-#Analysis from lcmSOM_analysis7_081314.Rmd
-plot.data <- read.table("../data/analysis1.som.data.small.ALLD.txt",header=TRUE)
-
-
-#clusterVis Function
-#displays transformed data in a box plot and 
-clusterVis <- function(clustNum){
-  
-  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
-  sub_data <- sub_cluster[,9:14] # just the sample types
-  m.data <- melt(sub_data) 
-  
-  p <- ggplot(m.data, aes(x=variable, y=value))
-  p + geom_point(alpha=0.5, position="jitter", size=1) + geom_boxplot(alpha=0.75, outlier.size=0) 
-}
-
-clusterNum <- function(clustNum){
-
-  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
-#   print(paste("total number of genes in sub cluster is ", 
-#               nrow(sub_cluster)
-#               )
-#         )
-
-  scwt <- subset(sub_cluster, genotype == "wt")
-#   print(paste("total number of genes in wt cluster is ", 
-#               nrow(scwt)
-#               )
-#         )
-
-  sctf2 <- subset(sub_cluster, genotype == "tf2")
-#   print(paste("total number of genes in tf2 cluster is ", 
-#               nrow(sctf2)
-#               )
-#         )
-  
-  scIntersect <- as.data.frame(intersect(scwt$gene, sctf2$gene))
-#    print(paste("There are", 
-#                length(intersect(scwt$gene, sctf2$gene)), 
-#                " that are the same between wt and tf2"
-#                )
-#          )
-  
-  ##Venn Diagram part
-  grid.newpage()
-  venn.plot <- draw.pairwise.venn(area1 = nrow(scwt),
-                              area2    = nrow(sctf2),
-                              cross.area = length(intersect(scwt$gene, sctf2$gene)),
-                              scaled       = F,
-                              category     = c("Wildtype", "tf2"),
-                              fill         = c("blue", "red"),
-                                alpha        = 0.3,
-                                lty          = "blank",
-                                cex          = 2,
-                                cat.cex      = 2,
-                                cat.pos      = c(315, 25),
-                                cat.dist     = 0.09,
-                                cat.just     = list(c(-1, -1), c(1, 1)),
-                                ext.pos      = 30,
-                                ext.dist     = -0.05,
-                                ext.length   = 0.85)
-  grid.draw(venn.plot)
-
-}
-
-```
-
-![aother](images/img10.png)
 ***
+<br/>
+The *TF-2* gene is required to maintain morphogenetic potential 
+<small>(PNAS, Naz et al., 2013)</small>.
 
-```{r, echo=FALSE}
-clusterVis_geno(5)
-```
-
-
-Basic Organized Maps
+trifoliate mutant 
 ========================================================
-```{r, echo=FALSE}
-clusterNum(5)
-```
+left: 60%
+
+![trifoliate](images/img25.png)
 
 ***
 
-- GO enrichment reflects previous DE expression: in this case photosythetic enriched.
-- We can go further by looking into what sorts of genes are similar & different between the groups, to try to understand further how these genotypes are differently regulated. 
+Marginal Blastozone in trifoliate cannot make new leaflets at P4 stage.
 
-Basic Organized Maps
-========================================================
-```{r, echo=FALSE}
-clusterNum(5)
-```
+Comparisons with wildtype will help isolate genes involved in regulation of morphogenetic potential.
 
-***
-
-- GO enrichment reflects previous DE expression: in this case photosythetic enriched.
-- We can go further by looking into what sorts of genes are similar & different between the groups, to try to understand further how these genotypes are differently regulated. 
-
-Basic Organized Maps - Margin at Base 
-========================================================
-left:30%
-
-![aother](images/img14.png)
-***
-```{r, echo=FALSE}
-clusterNum(2)
-```
-
-Basic Organized Maps - Margin at Base 
-========================================================
-left:30%
-
-![aother](images/img14.png)
-***
-- GO sequence-specific DNA binding transcription factor activity & transcription factor complex
-
-- *tf2* specific includes developmental genes YABBY, KNAT6, ARF8, SCARECROW
-
-- WT specific includes NAC transcription factor
-
-**Still too many genes!**
-
-Future : Need to look at larger SOMs for more refined co-expression patterns. 
 
 Super Self Organized Maps (superSOM)
 ========================================================
+<br/><br/>
+![somDiagram](images/img13.5.png)
 
-![somDiagram](images/img13.png)
-
+***
+<br/></br>
 Super SOM: clusters have dimensionality and a separate 
 identity associated with genotype data set, but ultimately, 
 data must be assigned to the same cluster.
-
-Super Organized Maps
-========================================================
-
-![somDiagram](images/img13.png)
 
 ```{r, echo = FALSE}
 plot.data <- read.table("../data/ssom.data.analysis5d.txt",header=TRUE)
@@ -583,8 +514,14 @@ clusterVis <- function(clustNum){
   sub_data <- melt(sub_data)
   sub_data <- within(sub_data, lineGroup <- paste(genotype, gene,sep='.'))
   ggplot(sub_data, aes(variable, value, group = lineGroup, color =  genotype )) + 
-    geom_line(alpha = .1, (aes(color = factor(genotype)))) + 
-    geom_point(alpha = .0)
+    geom_line(alpha = .2, (aes(color = factor(genotype)))) + 
+    geom_point(alpha = .0) +
+     theme(text = element_text(size=50),
+           legend.position="none",
+          axis.text.x = element_text(angle=90, 
+                                     vjust=1)) +
+    xlab("Tissue Region") +
+    ylab("Scaled Gene Expr.")
   }
   
 genesInClust <- function(clustNum) {
@@ -622,8 +559,10 @@ clusterVis_PCA <- function(clustNum) {
     scale_colour_manual(values=c("#cccccc", "#000000")) + 
     theme_bw() + 
     theme(legend.text = element_text(
-      size = 16, 
-      face = "bold")) + 
+          size = 30, 
+          face = "bold"), 
+          text = element_text(size=30), 
+            legend.position="none") +
     facet_grid(. ~ genotype)
 }
 
@@ -649,16 +588,12 @@ clusterVis_PCAsub <- function(clustNum) {
 
 SuperSOM - Cluster 12
 ========================================================
-
-```{r, echo=FALSE}
-
-clusterVis(12)
-```
+left: 20%
+![leaf](images/img26.png)
 
 ***
 
-```{r, echo=FALSE}
-
+```{r, echo=FALSE, fig.width=15, fig.height=10}
 clusterVis_line(12)
 ```
 
@@ -674,7 +609,6 @@ clusterVis_PCA(12)
 ***
 
 ```{r, echo=FALSE}
-
 clusterVis_PCAsub(12)
 ```
 
@@ -708,8 +642,12 @@ SuperSOM - Cluster 12
 
 SuperSOM - Cluster 28
 ========================================================
+left: 20%
+![leaf](images/img26.png)
 
-```{r, echo=FALSE}
+***
+
+```{r, echo=FALSE, fig.width=15, fig.height=10}
 clusterVis_line(28)
 ```
 
@@ -729,14 +667,86 @@ clusterVis_PCAsub(28)
 
 Conclusions
 ========================================================
-1. 
+1. There are GO categories associated with different levels 
+of cell differentiation.
+
+2. There are groups of genes that define marginal blastozone along 
+longitudinal axis, which include both known regulators and unknown genes.
 
 
 Future
 ========================================================
 
-- Look into SOMs a closer, identify possible canidates for 
-functional work
+- Combine all these interesting developmental clusters. 
 
-- Network analysis to identify major hubs of developmental 
-patterning
+- Combining both data from this study and other RNAseq leaf data. Network analysis to identify major hubs of developmental regulation.
+
+- Functional analysis. 
+
+Acknowlegements
+========================================================
+<br/><br/>
+
+<H2>Thanks</H2>
+
+Sinha Lab
+
+*Brad Townsley
+
+Harada Lab
+ 
+
+***
+
+<br/><br/>
+
+<H2>Funding</H2>
+
+NSF GRFP Fellowship
+
+Elsie Taylor Stocking Fellowship
+
+Walter R. and Roselinde H. Russell Fellowship
+
+Collaborative Coding
+=========================================
+
+<H2>On Github:</H2>
+
+-Scripts
+
+-Normalized Data
+
+-Tools for SOM cluster visualization
+
+@iamciera on Github.
+
+Coding Collective
+=========================================
+left:70%
+
+Collaboratively learn to program.
+
+All programing languages.  
+
+All skill levels.
+
+Learn faster, code together.
+
+<H2>4-6pm (in LSA 2002)</H2>
+
+<H2>github.com/theCodingCollective</H2>
+
+***
+
+![leaf](images/img40.png)
+
+
+
+
+
+
+
+
+
+

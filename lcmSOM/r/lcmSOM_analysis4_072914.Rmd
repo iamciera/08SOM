@@ -8,8 +8,6 @@ In this analysis I am checking to see if using the top 25% of genes based on co-
 countData <- read.csv("../data/normalized_read_count.csv")
 head(countData)
 
-names(countData)
-
 countData$tf2ambr <- rowMeans(subset(countData[2:5]))
 countData$tf2aother <- rowMeans(subset(countData[6:9]))
 countData$tf2bmbr <- rowMeans(subset(countData[10:12]))

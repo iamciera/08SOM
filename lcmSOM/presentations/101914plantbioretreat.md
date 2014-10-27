@@ -4,6 +4,9 @@ author: Ciera Martinez
 date: October 18, 2014
 font-family: 'Baskerville'
 css:cieraSlides.css
+transition: fade
+width: 1440
+height: 700
 
 Background
 ========================================================
@@ -33,10 +36,39 @@ title: false
 **Pattern 1**: Tip to base wave of differentiation.  
 Cell differentation occurring first at the tip.
 
+Background
+========================================================
+left: 60%
+title: false
+
+<br/><br/>
+![cell differentiation](images/img6.png)
+
+***
+<br/><br/>
+**Pattern 1**: Tip to base wave of differentiation.  
+Cell differentation occurring first at the tip.
+
 **Pattern 2**: Midrib to Marginal  blastozone or marginal meristem  
 (defined histologically as having dense cells and 
 maintenance of high rates of cell division)
 
+Background
+========================================================
+left: 60%
+title: false
+
+<br/><br/>
+![cell differentiation](images/img23.png)
+
+***
+<br/><br/>
+**Pattern 1**: Tip to base wave of differentiation.  
+Cell differentation occurring first at the tip.
+
+**Pattern 2**: Midrib to Marginal  blastozone or marginal meristem  
+(defined histologically as having dense cells and 
+maintenance of high rates of cell division)
 
 Main Question
 ========================================================
@@ -68,15 +100,15 @@ Laser Capture Microdissection
 <source src="movies/LCMmovie.m4v" type="video/mp4">
 </video>
 
-DE & GO enrichment
+Differential Expression (DE) & GO enrichment
 ========================================================
 
-![cell differentiation](images/img16.png)
+<center>![cell differentiation](images/img16.png)</center>
 
 DE & GO enrichment
 ========================================================
-
-<center>![cell differentiation](images/img18.png)</center>
+left: 70%
+<center>![cell differentiation](images/img16.5.png)</center>
 
 ***
 
@@ -190,16 +222,18 @@ PC3 (20.3%)
 PC4 (15.6%)
 
 Self Organizing Maps  
-========================================================
+=======================================================
+left: 80% 
+<br/><br/>
+<br/><br/>
+<H2>Groups objects based on categories that define them.</H2> 
 
-</br></br> 
-Group genes with similar expression patterns to clusters 
-or nodes. 
+Self Organizing Maps  
+=======================================================
+left: 80% 
 
-***
+![map](images/img27.png)
 
-</br></br> 
-Explain what SOM better. 
 
 Self Organizing Maps: Limit to six clusters
 ========================================================
@@ -224,12 +258,12 @@ Clusters help define PCA clustering
 </br></br>
 **Question 1**: What genes define these clusters? Does clustering give similar GO enrichment results to DE analysis?
 
-Cluster 2 
+Cluster 2
 ========================================================
 
 ![plot of chunk unnamed-chunk-7](101914plantbioretreat-figure/unnamed-chunk-7.png) 
 
-Cluster 2 - Genes that are up-regulated in top rachis
+Cluster 2 - Genes that are up-regulated in top midvein 
 ========================================================
 left:30%
 
@@ -248,14 +282,16 @@ Cluster 2 - Photosynthetic GO categories
 **Question 1**: Does clustering give similar GO enrichment 
 results to DE analysis?
 
-Yes. Recapitulates DE expression patterns in tissue 
-specific regions.
-
 **GO Categories**
 - heme binding                   
 - oxygen binding                  
 - photosynthesis, light harvesting
 - apoptotic process  
+
+Yes. Recapitulates DE expression patterns in tissue 
+specific regions.
+
+
 
 
 
@@ -333,33 +369,182 @@ Cluster 35 - Photosynthesis and Vascular Differentiation
 
 **Solyc08g067330** - Encodes lhcb1.1 a component of the LHCIIb light harvesting complex associated with photosystem II.</small>
 
-Further investigation using mutant with accelerated cellular differentiation
+ trifoliate (tf-2) mutant 
 ========================================================
+left: 60%
 
-The trifoliate mutant is unable to make leaflets in rachis.
+![trifoliate](images/img24.png)
+
+***
+<br/>
+The *TF-2* gene is required to maintain morphogenetic potential 
+<small>(PNAS, Naz et al., 2013)</small>.
+
+trifoliate mutant 
 ========================================================
+left: 60%
 
-<center>![trifoliate](images/img24.png)</center>
-*trifoliate* mutant is unable to make leaflets in response to exogenous
-auxin applications, indicating lack of competence in the 
-primordium.
+![trifoliate](images/img25.png)
 
-The TF-2 gene is required to maintain morphogenetic potential.
-
-
-Basic Vs. Super Self Organized Maps
-========================================================
-</br></br>
-![SOMdiagram](images/img13.png)
-
-Basic SOM Small - Rachis & Tip up-regulated genes
-========================================================
-left:30%
-
-
-![aother](images/img10.png)
 ***
 
+Marginal Blastozone in trifoliate cannot make new leaflets at P4 stage.
+
+Comparisons with wildtype will help isolate genes involved in regulation of morphogenetic potential.
+
+
+Super Self Organized Maps (superSOM)
+========================================================
+<br/><br/>
+![somDiagram](images/img13.5.png)
+
+***
+<br/></br>
+Super SOM: clusters have dimensionality and a separate 
+identity associated with genotype data set, but ultimately, 
+data must be assigned to the same cluster.
+
+
+
+SuperSOM - Cluster 12
+========================================================
+left: 20%
+![leaf](images/img26.png)
+
+***
+
+![plot of chunk unnamed-chunk-13](101914plantbioretreat-figure/unnamed-chunk-13.png) 
+
+SuperSOM - Cluster 12
+========================================================
+
+![plot of chunk unnamed-chunk-14](101914plantbioretreat-figure/unnamed-chunk-14.png) 
+
+***
+
+![plot of chunk unnamed-chunk-15](101914plantbioretreat-figure/unnamed-chunk-15.png) 
+
+SuperSOM - Cluster 12
+========================================================
+
+<H3>Auxin Regulation and Transport</H3>
+
+**Solyc12g006340.1.1 (ARF8)**:Encodes a member of the auxin response factor family.
+
+**Solyc10g076790.1.1 (AUX1)**:  Encodes an auxin influx transporter.
+
+**Solyc03g118740.2.1 (PIN1)**: Auxin efflux.
+
+SuperSOM - Cluster 12
+========================================================
+
+<H3>Developmental Transciption Factors</H3>
+
+**Solyc09g065820.2.1**:  DNA binding / transcription factor; cell differentiation.
+
+**Solyc09g010780.2.1**:  Involved in leaf development. Knockout mutants have abnormally shaped leaves.
+
+**Solyc02g080260.2.1**: Encodes a homeodomain protein that is expressed in the LI layer of the vegetative
+
+**Solyc07g018290.2.1 (PLETHERA 1)**: expressed in young tissues and may specify meristematic or division-competent states. (Wilson et al., 2005).
+
+**Solyc06g075850.1.1**: Histone H4 : cytochrome P450 monooxygenase. Expressed in cotyledons and leaves
+
+**Solyc04g009950.2.1**: R2R3- type MYB- encoding genes
+
+SuperSOM - Cluster 28
+========================================================
+left: 20%
+![leaf](images/img26.png)
+
+***
+
+![plot of chunk unnamed-chunk-16](101914plantbioretreat-figure/unnamed-chunk-16.png) 
+
+SuperSOM - Cluster 28
+========================================================
+
+![plot of chunk unnamed-chunk-17](101914plantbioretreat-figure/unnamed-chunk-17.png) 
+
+***
+
+![plot of chunk unnamed-chunk-18](101914plantbioretreat-figure/unnamed-chunk-18.png) 
+
+Conclusions
+========================================================
+1. There are GO categories associated with different levels 
+of cell differentiation.
+
+2. There are groups of genes that define marginal blastozone along 
+longitudinal axis, which include both known regulators and unknown genes.
+
+
+Future
+========================================================
+
+- Combine all these interesting developmental clusters. 
+
+- Combining both data from this study and other RNAseq leaf data. Network analysis to identify major hubs of developmental regulation.
+
+- Functional analysis. 
+
+Acknowlegements
+========================================================
+<br/><br/>
+
+<H2>Thanks</H2>
+
+Sinha Lab
+
+*Brad Townsley
+
+Harada Lab
+ 
+
+***
+
+<br/><br/>
+
+<H2>Funding</H2>
+
+NSF GRFP Fellowship
+
+Elsie Taylor Stocking Fellowship
+
+Walter R. and Roselinde H. Russell Fellowship
+
+Collaborative Coding
+=========================================
+
+<H2>On Github:</H2>
+
+-Scripts
+
+-Normalized Data
+
+-Tools for SOM cluster visualization
+
+@iamciera on Github.
+
+Coding Collective
+=========================================
+left:70%
+
+Collaboratively learn to program.
+
+All programing languages.  
+
+All skill levels.
+
+Learn faster, code together.
+
+<H2>4-6pm (in LSA 2002)</H2>
+
+<H2>github.com/theCodingCollective</H2>
+
+***
+
+![leaf](images/img40.png)
 
 
 
@@ -370,21 +555,3 @@ left:30%
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-```
-Error in eval(expr, envir, enclos) : object 'ssom.unit.classif' not found
-```

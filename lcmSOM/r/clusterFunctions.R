@@ -43,6 +43,7 @@ clusterVis_region <- function(clustNum){
       facet_grid(region~.)
 }
 
+##Not finished
 clusterVis_regionSuper <- function(clustNum){
   sub_cluster <- subset(data.val3, som$unit.classif==2)
   sub_data <- sub_cluster[,c(1, 8:13)] # just the sample types
@@ -69,7 +70,7 @@ clusterVis_regionSuper <- function(clustNum){
 
 clusterVis_geno <- function(clustNum){
   
-  sub_cluster <- subset(plot.data, ssom.unit.classif==1)
+  sub_cluster <- subset(plot.data, som.unit.classif==clustNum)
   
   sub_data <- sub_cluster[,c(1,9:14)] # just the sample types
   names(sub_data)
@@ -86,7 +87,8 @@ clusterVis_geno <- function(clustNum){
   p + geom_point(alpha=0.5, position="jitter", size=1) + 
   geom_boxplot(alpha=0.75, outlier.size=0) + 
   theme_bw() + 
-  scale_colour_manual(values=c("#ef8a62", "#67a9cf")) 
+  scale_colour_manual(values=c("#ef8a62", "#67a9cf"))  + 
+    facet_grid(region ~ .)
 }
 
 

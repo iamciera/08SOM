@@ -77,17 +77,16 @@ som$data <- data.frame(som$data) #changed to dataframe to extract column names e
 
 data.val2 <- cbind(data.val,som$unit.classif,som$distances) 
 
+#Output for for the Network
+#write.csv(data.val2, file = "../data/SOM_analysis9.5forNetwork.csv")
+
 #fix to one regex
 data.val2$gene <- gsub("^(.*)[.].*", "\\1", data.val2$gene)
 data.val2$gene <- gsub("^(.*)[.].*", "\\1", data.val2$gene)
 head(data.val2)
-
-#I need to add in the region to this information for subsetting by region when visualizing. In order to do that, I need to melt, add region information then cast back out. 
-
-
 ```
 
-Upload the gene expression list.
+Upload the gene expression list. I need to add in the region to this information for subsetting by region when visualizing. In order to do that, I need to melt, add region information then cast back out. 
 
 ```{r}
 geneList1 <- read.csv("../../../06diffGeneExp/analysis/indvGenes/yasuCuratedGenes/pnas.1402835111.sd06.csv")
@@ -154,7 +153,7 @@ High in the C regions.
 ```{r}
 clusterVis(3)
 clusterVis_PCA(3)
-#clusterVis_line(3)
+clusterVis_line(3)
 #clusterGO(3)
 y <- genesInClust(3, data.val2, annotation)
 kable(y, format = "latex", booktabs = TRUE)
@@ -179,7 +178,6 @@ clusterVis_PCA(4)
 #clusterGO(4)
 y <- genesInClust(4, data.val2, annotation)
 kable(y, format = "latex", booktabs = TRUE)
-
 ```
 
 ##Cluster 5
@@ -581,7 +579,7 @@ kable(y, format = "latex", booktabs = TRUE)
 ```
 ##Cluster 32
 
-Aothoer and Bother up-regulated compared to mbr.
+Aother and Bother up-regulated compared to mbr.
 ```{r}
 clusterVis(32)
 clusterVis_PCA(32)
@@ -689,7 +687,24 @@ intersect(genesOfInterest$gene, data.val.allGenes25$gene) # There are only 77 wh
 #There are 51 which overlap with the DE genes. 
 ```
 
-I have to make a decision between 
+head(data.val2)
+```{r}
+##output for network analysis
+
+head(data.val2)
+colnames(data.val2)
+data.val3 <- data.val2
+colnames(data.val3)[20] <- "som.unit.classif"
+
+sub_cluster4 <- subset(data.val3, som.unit.classif==4)
+sub_cluster6 <- subset(data.val3, som.unit.classif==6)
+sub_cluster17 <- subset(data.val3, som.unit.classif==17)
+sub_cluster19 <- subset(data.val3, som.unit.classif==19)
+sub_cluster20 <- subset(data.val3, som.unit.classif==20)
+
+sub_cluster <- rbind(sub_cluster4, sub_cluster6, sub_cluster17, sub_cluster19, sub_cluster20)
+
+write.csv(sub_cluster, "../data/forNetwork/SOM_analysis9.5.csv")
 
 
 

@@ -376,7 +376,6 @@ Solyc03g118740.2.1 (PIN1): Auxin efflux.
 
 
 
-
 Solyc09g065820.2.1:  DNA binding / transcription factor; cell differentiation.
 Solyc09g010780.2.1:  Involved in leaf development. Knockout mutants have abnormally shaped leaves.
 Solyc02g080260.2.1: Encodes a homeodomain protein that is expressed in the LI layer of the vegetative
@@ -668,9 +667,15 @@ I need to write something that looks at the statistical difference in tissue bet
 
 2. Significant differences between genotype at each tissue. 
 
+```{r}
+##output for network analysis
 
+head(plot.data)
+colnames(plot.data)
 
-
+sub_cluster <- subset(plot.data, ssom.unit.classif==12)
+write.csv(sub_cluster, "../data/superSOM_analysis8.csv")
+```
 
 
 

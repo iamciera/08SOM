@@ -1,0 +1,233 @@
+#Curated Gene Visualization
+
+The purpose of this study is to visualize curation of genes.  
+
+##Questions
+
+Are the curated list of leaf genes "enriched" in any of the clusters?
+Are the curated list of hormone genes "enriched" in any of the clusters
+
+##Required Libraries
+
+```{r}
+library(VennDiagram)
+library(ggplot2)
+library(reshape)
+library(kohonen)
+library(goseq)
+library(GO.db)
+library(knitr)
+source("./clusterFunctions.R")
+```
+
+Upload that dataset:
+
+```{r}
+genes25 <- read.csv("../data/analysis4.top25.csv")
+genes25 <- genes25[,c(2,9:14)]
+head(genes25)
+```
+
+##Self Organizing Map - (6,6), large
+
+```{r}
+#subset only the scaled gene expression values
+
+set.seed(6)
+som <- som(data=scale_data, somgrid(6,6,"hexagonal")) # This is where you change the size of the map
+summary(som)
+```
+
+###Look at the SOM results
+```{r}
+plot(som, type = "codes")
+plot(som, type = "counts")
+plot(som, type="dist.neighbours")
+som$data <- data.frame(som$data) #changed to dataframe to extract column names easier. 
+
+data.val2 <- cbind(data.val,som$unit.classif,som$distances) 
+
+#snp away the last digit in the sgn annotation so I can merge with the other files 
+data.val2$gene <- gsub("^(.*)[.].*", "\\1", data.val2$gene)
+data.val2$gene <- gsub("^(.*)[.].*", "\\1", data.val2$gene)
+head(data.val2)
+```
+
+##Leaf Genes
+
+Upload the gene expression list. I need to add in the region to this information for subsetting by region when visualizing. In order to do that, I need to melt, add region information then cast back out. 
+
+```{r}
+geneList1 <- read.csv("../../../06diffGeneExp/analysis/indvGenes/yasuCuratedGenes/pnas.1402835111.sd06.csv")
+
+#isolate the genes
+genesOfInterest <- geneList1[,c(1,3)]
+colnames(genesOfInterest) <- c("gene", "name")
+names(genesOfInterest) #check
+```
+
+```{r}
+#Assigning if a gene is a curated gene.
+
+data.val2$curated <- match(data.val2$gene, genesOfInterest$gene)
+data.val2$curated <- gsub("[[:digit:]]+", "yes", data.val2$curated)
+data.val2$curated[is.na(data.val2$curated)] <- "no"
+```
+
+
+Visualize the major clusters.  Here are the leaf curated genes in PC space. 
+
+```{r}
+head(data.val2)
+p <- ggplot(data.val2, aes(PC1, PC2, color = curated)) 
+
+p + geom_point(size=I(2), alpha = 0.6) +
+  scale_colour_manual(values=c("#cccccc", "#33ff33")) + 
+  theme_bw()
+```
+
+##Look at cluster number
+
+```{r}
+head(data.val2) 
+names(data.val2)
+#clean up som$unit.classif column 
+#change the name
+colnames(data.val2)[20] <- "cluster"
+colnames(data.val2)[21] <- "distances"
+
+#change to character vector
+class(data.val2$cluster) #check
+data.val2$cluster <- as.character(data.val2$cluster)
+class(data.val2$cluster) #check
+```
+
+Exploring
+```{r}
+ggplot(data.val2, aes(cluster)) + geom_bar() + theme_bw()
+```
+
+##Merging TAIR annotation, SGN orthologue, and curated arabidopsis hormone list
+Now we need to add some other characteristics to this data set.  We need to combine the TAIR IDs to the mix.
+
+Peparing annotation file:
+```{r}
+#Load TAIR annotation
+
+annotation1<- read.delim("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_ITAG_annotations.tsv", header=FALSE)  #Changed to the SGN human readable annotation
+colnames(annotation1) <- c("ITAG", "SGN_annotation")
+annotation2<- read.delim ("../../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_annotated.tsv")
+
+tair <- merge(annotation1,annotation2, by = "ITAG")
+head(tair)
+names(tair)
+
+#Clean Up so that we can merge with the cluster file (data.val2)
+##Keep only what we need
+tairShort <- tair[,c(1,3)] 
+dim(tairShort)
+head(tairShort)
+
+##Need to get rid of the decimals in the ITAG column and change title to "gene"
+colnames(tairShort)[1] <- "gene"
+
+tairShort$gene <- gsub("^(.*)[.].*", "\\1", tairShort$gene)
+tairShort$gene <- gsub("^(.*)[.].*", "\\1", tairShort$gene)
+
+head(tairShort)
+```
+
+Preparing hormone list file:
+```{r}
+hormone <- read.csv("../data/hormoneEnrichment/and.cbi.pku.edu.n_hormoneDatabase.csv")
+head(hormone)
+colnames(hormone)[1] <- "AGI"
+```
+
+Now we are ready to merge all three files. 
+```{r}
+names(data.val2)
+dim(data.val2)
+names(tairShort)
+dim(tairShort)
+names(hormone)
+
+merge1 <- merge(tairShort, data.val2, by = "gene", all.y = TRUE)
+?merge
+head(merge1)
+names(merge1)
+dim(merge1)
+
+full <- merge(merge1, hormone, by = "AGI", all.x = TRUE)
+dim(full)
+head(full)
+
+#Something isn't right with the numbers, double check.
+
+```{r}
+ggplot(full, aes(cluster, fill = Related.Hormone)) + geom_bar() + theme_bw()
+```
+
+##Smaller SOM
+
+```{r}
+genes25 <- read.csv("../data/analysis4.top25.csv")
+genes25 <- genes25[,c(2,9:14)]
+```
+
+```{r}
+scale_data <- as.matrix(t(scale(t(genes25[c(2:7)])))) 
+pca <- prcomp(scale_data, scale=TRUE) 
+summary(pca) 
+pca.scores <- data.frame(pca$x)
+data.val <- cbind(genes25, scale_data, pca.scores) 
+```
+
+
+```{r}
+#subset only the scaled gene expression values
+
+set.seed(6)
+som <- som(data=scale_data, somgrid(3,2,"hexagonal")) # This is where you change the size of the map
+summary(som)
+```
+
+###Making dataframe
+```{r}
+data.val3 <- cbind(data.val,som$unit.classif,som$distances) 
+names(data.val3)
+
+head(data.val3) 
+names(data.val3)
+#clean up som$unit.classif column 
+#change the name
+colnames(data.val3)[20] <- "cluster"
+colnames(data.val3)[21] <- "distances"
+
+data.val3$gene <- gsub("^(.*)[.].*", "\\1", data.val3$gene)
+data.val3$gene <- gsub("^(.*)[.].*", "\\1", data.val3$gene)
+
+#change to character vector
+class(data.val3$cluster) #check
+
+data.val3$cluster <- as.character(data.val3$cluster)
+class(data.val3$cluster) #check
+
+
+merge1 <- merge(tairShort, data.val3, by = "gene", all.y = TRUE)
+
+
+full2 <- merge(merge1, hormone, by = "AGI", all.x = TRUE)
+
+
+ggplot(full2, aes(cluster, fill = Related.Hormone)) + geom_bar() + theme_bw()
+
+#Upregulated in
+#cluster 1 is wtcother
+#cluster 2 is wtaother
+#clusrer 3 is wtbother
+#cluster 4 is wtambr
+#cluster 5 is wtbmbr
+#cluster 6 is wtcmbr
+```
+

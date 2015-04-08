@@ -5,8 +5,7 @@ date: October 18, 2014
 font-family: 'Baskerville'
 css:cieraSlides.css
 transition: fade
-width: 1440
-height: 700
+autosize: true
 
 Background
 ========================================================

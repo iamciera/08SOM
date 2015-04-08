@@ -352,7 +352,7 @@ left: 30%
 ***
 
 ```{r,echo=FALSE}
-clusterVis2(17)
+clusterVis(17)
 ```
 
 Cluster 17: Up-regulated in rachis compared to margin tissue within each region 
